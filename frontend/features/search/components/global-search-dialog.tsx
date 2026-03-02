@@ -91,7 +91,7 @@ export function GlobalSearchDialog({
     <CommandDialog
       open={open}
       onOpenChange={onOpenChange}
-      className="top-[35%] translate-y-0"
+      className="top-[20%] translate-y-0"
       commandProps={{ shouldFilter: false }}
     >
       <CommandInput
