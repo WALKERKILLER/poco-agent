@@ -32,12 +32,3 @@ repos:
     hooks:
       - id: prettier
         name: frontend · format
-
-  - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.13.0
-    hooks:
-      - id: markdownlint-cli2
-        args: ["--fix", "--config", ".github/.markdownlint.yaml"]
-        name: docs · lint
-        files: ^(docs/.*|.*)\.md$
-        types: [file]

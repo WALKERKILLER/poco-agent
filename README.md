@@ -11,6 +11,7 @@ A safer, more beautiful, and easier-to-use OpenClaw alternative
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)](https://fastapi.tiangolo.com/)
+[![Docs](https://img.shields.io/badge/poco-docs-blueviolet)](https://docs.poco-ai.com/)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/poco-ai/poco-agent)
 
 [English](README.md) | [简体中文](README_zh.md)
@@ -55,7 +56,7 @@ Run the interactive setup script to automatically generate configuration and sta
 
 Visit: `http://localhost:3000` after startup completes.
 
-For detailed deployment documentation and troubleshooting, please refer to the [Deployment Guide](./docs/en/README.md).
+For detailed deployment documentation and troubleshooting, please refer to the [Deployment Guide](https://docs.poco-ai.com/en/deployment).
 
 ## Star History
 
