@@ -50,7 +50,8 @@
     "uploadFile": "Datei hochladen",
     "dragDrop": {
       "title": "Dateien zum Hochladen hier ablegen",
-      "hint": "Dateien loslassen, um sie als Anhang hinzuzufügen"
+      "hint": "Dateien loslassen, um sie als Anhang hinzuzufügen",
+      "escHint": "Esc drücken, um den Upload abzubrechen"
     },
     "importCode": "Code importieren",
     "voiceInput": "Spracheingabe",

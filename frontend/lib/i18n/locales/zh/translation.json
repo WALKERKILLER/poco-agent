@@ -51,7 +51,8 @@
     "uploadFile": "上传文件",
     "dragDrop": {
       "title": "拖拽文件以上传",
-      "hint": "松开文件后将作为附件添加到当前消息"
+      "hint": "松开文件后将作为附件添加到当前消息",
+      "escHint": "点击 'Esc' 取消上传"
     },
     "importCode": "导入代码",
     "voiceInput": "语音输入",

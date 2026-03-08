@@ -453,6 +453,9 @@ export function TaskComposer({
             <p className="mt-2 text-sm text-muted-foreground">
               {t("hero.dragDrop.hint")}
             </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("hero.dragDrop.escHint")}
+            </p>
           </div>
         </div>
       ) : null}

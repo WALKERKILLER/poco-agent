@@ -74,6 +74,7 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
     const [historyIndex, setHistoryIndex] = useState(-1);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const uploadAbortControllerRef = useRef<AbortController | null>(null);
     const dictationBaseRef = useRef("");
     const isDictatingRef = useRef(false);
     const isSpeechUpdateRef = useRef(false);
@@ -144,9 +145,16 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
             .filter(Boolean),
         );
 
+        uploadAbortControllerRef.current?.abort();
+        const abortController = new AbortController();
+        uploadAbortControllerRef.current = abortController;
         setIsUploading(true);
         try {
           for (const file of files) {
+            if (abortController.signal.aborted) {
+              break;
+            }
+
             const normalizedName = file.name.trim().toLowerCase();
             if (existingNames.has(normalizedName)) {
               toast.error(
@@ -163,17 +171,58 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
             }
 
             try {
-              const uploadedFile = await uploadAttachment(file);
-              setAttachments((prev) => [...prev, uploadedFile]);
+              const uploadPromise = uploadAttachment(file);
+              let handleAbort: (() => void) | null = null;
+              const uploadResult = await Promise.race([
+                uploadPromise.then(
+                  (uploadedFile) =>
+                    ({ type: "uploaded", uploadedFile }) as const,
+                ),
+                new Promise<{ type: "cancelled" }>((resolve) => {
+                  if (abortController.signal.aborted) {
+                    resolve({ type: "cancelled" });
+                    return;
+                  }
+                  handleAbort = () => {
+                    resolve({ type: "cancelled" });
+                  };
+                  abortController.signal.addEventListener(
+                    "abort",
+                    handleAbort,
+                    {
+                      once: true,
+                    },
+                  );
+                }),
+              ]);
+              if (handleAbort) {
+                abortController.signal.removeEventListener(
+                  "abort",
+                  handleAbort,
+                );
+              }
+
+              if (uploadResult.type === "cancelled") {
+                void uploadPromise.catch(() => undefined);
+                break;
+              }
+
+              setAttachments((prev) => [...prev, uploadResult.uploadedFile]);
               existingNames.add(normalizedName);
               toast.success(t("hero.toasts.uploadSuccess"));
               playUploadSound();
             } catch (error) {
+              if (abortController.signal.aborted) {
+                break;
+              }
               console.error("Upload failed:", error);
               toast.error(t("hero.toasts.uploadFailed"));
             }
           }
         } finally {
+          if (uploadAbortControllerRef.current === abortController) {
+            uploadAbortControllerRef.current = null;
+          }
           setIsUploading(false);
         }
       },
@@ -197,6 +246,36 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
         setHasVoiceSupport(true);
       }
     }, [browserSupportsSpeechRecognition, hasVoiceSupport]);
+
+    useEffect(() => {
+      return () => {
+        uploadAbortControllerRef.current?.abort();
+      };
+    }, []);
+
+    useEffect(() => {
+      if (!isUploading) {
+        return;
+      }
+
+      const handleUploadCancelByEscape = (event: KeyboardEvent) => {
+        if (event.key !== "Escape") {
+          return;
+        }
+
+        if (!uploadAbortControllerRef.current) {
+          return;
+        }
+
+        event.preventDefault();
+        uploadAbortControllerRef.current.abort();
+      };
+
+      window.addEventListener("keydown", handleUploadCancelByEscape);
+      return () => {
+        window.removeEventListener("keydown", handleUploadCancelByEscape);
+      };
+    }, [isUploading]);
 
     // Keep voice transcript synchronized with current input while dictating.
     useEffect(() => {
@@ -616,6 +695,9 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
                 {t("hero.dragDrop.hint")}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("hero.dragDrop.escHint")}
               </p>
             </div>
           </div>

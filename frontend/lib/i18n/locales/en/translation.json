@@ -51,7 +51,8 @@
     "uploadFile": "Upload file",
     "dragDrop": {
       "title": "Drop files to upload",
-      "hint": "Release files to attach them to this message"
+      "hint": "Release files to attach them to this message",
+      "escHint": "Press Esc to cancel upload"
     },
     "importCode": "Import code",
     "voiceInput": "Voice input",

@@ -25,6 +25,7 @@ export function useFileDropUpload({
 }: UseFileDropUploadOptions) {
   const [isDragActive, setIsDragActive] = React.useState(false);
   const dragDepthRef = React.useRef(0);
+  const shouldDiscardDropRef = React.useRef(false);
 
   const resetDragState = React.useCallback(() => {
     dragDepthRef.current = 0;
@@ -34,11 +35,31 @@ export function useFileDropUpload({
   React.useEffect(() => {
     if (!disabled) return;
     resetDragState();
+    shouldDiscardDropRef.current = false;
   }, [disabled, resetDragState]);
+
+  React.useEffect(() => {
+    if (disabled || !isDragActive) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      shouldDiscardDropRef.current = true;
+      setIsDragActive(false);
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [disabled, isDragActive]);
 
   React.useEffect(() => {
     const handleDragEnter = (event: DragEvent) => {
       if (disabled || !hasFiles(event.dataTransfer)) return;
+      if (shouldDiscardDropRef.current) {
+        event.preventDefault();
+        return;
+      }
       event.preventDefault();
       dragDepthRef.current += 1;
       setIsDragActive(true);
@@ -46,6 +67,13 @@ export function useFileDropUpload({
 
     const handleDragOver = (event: DragEvent) => {
       if (disabled || !hasFiles(event.dataTransfer)) return;
+      if (shouldDiscardDropRef.current) {
+        event.preventDefault();
+        if (event.dataTransfer) {
+          event.dataTransfer.dropEffect = "copy";
+        }
+        return;
+      }
       event.preventDefault();
       if (event.dataTransfer) {
         event.dataTransfer.dropEffect = "copy";
@@ -54,6 +82,19 @@ export function useFileDropUpload({
 
     const handleDragLeave = (event: DragEvent) => {
       if (!hasFiles(event.dataTransfer)) return;
+      if (shouldDiscardDropRef.current) {
+        event.preventDefault();
+        const leftViewport =
+          event.clientX <= 0 ||
+          event.clientY <= 0 ||
+          event.clientX >= window.innerWidth ||
+          event.clientY >= window.innerHeight;
+        if (leftViewport) {
+          shouldDiscardDropRef.current = false;
+          dragDepthRef.current = 0;
+        }
+        return;
+      }
       event.preventDefault();
       dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
       if (dragDepthRef.current === 0) {
@@ -64,6 +105,11 @@ export function useFileDropUpload({
     const handleDrop = (event: DragEvent) => {
       if (!hasFiles(event.dataTransfer)) return;
       event.preventDefault();
+      if (shouldDiscardDropRef.current) {
+        shouldDiscardDropRef.current = false;
+        resetDragState();
+        return;
+      }
       const files = extractFiles(event.dataTransfer);
       resetDragState();
       if (disabled || files.length === 0) return;
