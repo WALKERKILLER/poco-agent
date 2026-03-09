@@ -1,7 +1,7 @@
 """add session pin fields
 
 Revision ID: 74e90ae3d7a1
-Revises: ef4fe9610e92
+Revises: 1b3d96b80d10
 Create Date: 2026-03-09 07:35:00.000000
 
 """
@@ -13,7 +13,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "74e90ae3d7a1"
-down_revision: Union[str, Sequence[str], None] = "ef4fe9610e92"
+down_revision: Union[str, Sequence[str], None] = "1b3d96b80d10"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
