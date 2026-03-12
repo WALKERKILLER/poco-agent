@@ -59,7 +59,6 @@ async def run_task(req: TaskRun, background_tasks: BackgroundTasks) -> dict:
         memory_client=memory_client,
         request_id=get_request_id(),
         trace_id=get_trace_id(),
-        runtime_env=req.runtime_env,
     )
 
     cfg = req.config

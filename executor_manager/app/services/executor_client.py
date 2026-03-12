@@ -35,7 +35,6 @@ class ExecutorClient:
         callback_base_url: str | None = None,
         sdk_session_id: str | None = None,
         permission_mode: str = "default",
-        runtime_env: dict[str, str] | None = None,
     ) -> str:
         """Call Executor to execute a task.
 
@@ -48,7 +47,6 @@ class ExecutorClient:
             config: Task configuration
             callback_base_url: Base URL for callback-related APIs
             sdk_session_id: Claude SDK session ID for resuming conversations
-            runtime_env: Task-scoped execution environment for direct mode
         """
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -63,7 +61,6 @@ class ExecutorClient:
                     "config": config,
                     "sdk_session_id": sdk_session_id,
                     "permission_mode": permission_mode or "default",
-                    "runtime_env": runtime_env or {},
                 },
                 headers=self._trace_headers(),
                 timeout=httpx.Timeout(30.0, connect=10.0),

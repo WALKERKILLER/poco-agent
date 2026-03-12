@@ -95,7 +95,7 @@ class ContainerDeleteRequest(BaseModel):
 class ContainerStatsResponse(BaseModel):
     """Container statistics response."""
 
-    runtime_mode: Literal["docker", "direct"] = "docker"
+    runtime_mode: Literal["docker"] = "docker"
     executor_url: str | None = None
     total_active: int
     persistent_containers: int

@@ -61,7 +61,6 @@ class AgentExecutor:
         memory_client: MemoryClient | None = None,
         request_id: str | None = None,
         trace_id: str | None = None,
-        runtime_env: dict[str, str] | None = None,
     ):
         self.session_id = session_id
         self.sdk_session_id = sdk_session_id
@@ -74,23 +73,9 @@ class AgentExecutor:
         )
         self._request_id = request_id
         self._trace_id = trace_id
-        self._runtime_env = {
-            str(key): str(value)
-            for key, value in (runtime_env or {}).items()
-            if value is not None
-        }
         self.workspace = WorkspaceManager(
-            mount_path=self._get_runtime_value("WORKSPACE_PATH", "/workspace")
+            mount_path=os.environ.get("WORKSPACE_PATH", "/workspace")
         )
-
-    def _get_runtime_value(self, name: str, default: str | None = None) -> str | None:
-        value = self._runtime_env.get(name)
-        if value is not None:
-            return value
-        env_value = os.environ.get(name)
-        if env_value is not None:
-            return env_value
-        return default
 
     async def execute(
         self, prompt: str, config: TaskConfig, *, permission_mode: str = "default"
@@ -311,9 +296,7 @@ class AgentExecutor:
 
             selected_model = (config.model or "").strip()
             if not selected_model:
-                selected_model = self._get_runtime_value("DEFAULT_MODEL") or ""
-            if not selected_model:
-                raise RuntimeError("DEFAULT_MODEL is not configured for executor runtime")
+                selected_model = os.environ["DEFAULT_MODEL"]
 
             options = ClaudeAgentOptions(
                 cwd=ctx.cwd,
@@ -339,7 +322,6 @@ class AgentExecutor:
                 hooks={"PreToolUse": [HookMatcher(matcher=None, hooks=[dummy_hook])]},
                 agents=agents,
                 plugins=plugins,
-                env=self._runtime_env,
             )
 
             async with ClaudeSDKClient(options=options) as client:
@@ -426,20 +408,20 @@ class AgentExecutor:
             return mcp_servers
 
         cdp_endpoint = (
-            (self._get_runtime_value("POCO_BROWSER_CDP_ENDPOINT", "http://127.0.0.1:9222") or "").strip()
+            os.environ.get("POCO_BROWSER_CDP_ENDPOINT", "http://127.0.0.1:9222").strip()
             or "http://127.0.0.1:9222"
         )
 
-        viewport_raw = (self._get_runtime_value("POCO_BROWSER_VIEWPORT_SIZE", "") or "").strip()
+        viewport_raw = (os.environ.get("POCO_BROWSER_VIEWPORT_SIZE") or "").strip()
         viewport = parse_viewport_size(viewport_raw) or (1366, 768)
         viewport_size = format_viewport_size(*viewport)
         output_mode = (
-            (self._get_runtime_value("PLAYWRIGHT_MCP_OUTPUT_MODE", "") or "").strip().lower()
+            (os.environ.get("PLAYWRIGHT_MCP_OUTPUT_MODE") or "").strip().lower()
         )
         if output_mode not in {"file", "stdout"}:
             output_mode = "file"
         image_responses = (
-            (self._get_runtime_value("PLAYWRIGHT_MCP_IMAGE_RESPONSES", "") or "").strip().lower()
+            (os.environ.get("PLAYWRIGHT_MCP_IMAGE_RESPONSES") or "").strip().lower()
         )
         if image_responses not in {"allow", "omit"}:
             image_responses = "omit"

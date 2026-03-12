@@ -15,7 +15,6 @@ from app.core.observability.request_context import (
 from app.services.backend_client import BackendClient
 from app.services.container_pool import ContainerPool
 from app.services.executor_client import ExecutorClient
-from app.services.executor_runtime_service import ExecutorRuntimeService
 from app.services.config_resolver import ConfigResolver
 from app.services.skill_stager import SkillStager
 from app.services.plugin_stager import PluginStager
@@ -47,13 +46,10 @@ class TaskDispatcher:
     """Task dispatcher with container pool integration."""
 
     container_pool: ContainerPool | None = None
-    runtime_service = ExecutorRuntimeService()
 
     @classmethod
     def get_container_pool(cls) -> ContainerPool:
         """Get container pool instance (lazy load)."""
-        if not cls.runtime_service.uses_docker_runtime():
-            raise RuntimeError("Container pool is unavailable in direct runtime mode")
         if cls.container_pool is None:
             cls.container_pool = ContainerPool()
         return cls.container_pool
@@ -68,15 +64,6 @@ class TaskDispatcher:
         container_mode: str,
         container_id: str | None,
     ) -> tuple[str, str | None]:
-        if not cls.runtime_service.uses_docker_runtime():
-            return cls.runtime_service.resolve_direct_target(
-                session_id=session_id,
-                user_id=user_id,
-                browser_enabled=browser_enabled,
-                container_mode=container_mode,
-                container_id=container_id,
-            )
-
         container_pool = cls.get_container_pool()
         return await container_pool.get_or_create_container(
             session_id=session_id,
@@ -110,7 +97,6 @@ class TaskDispatcher:
             enqueued_at: perf_counter timestamp when the task was enqueued (for queue delay)
         """
         settings = get_settings()
-        runtime_service = TaskDispatcher.runtime_service
         executor_client = ExecutorClient()
         backend_client = BackendClient()
         config_resolver = ConfigResolver(backend_client)
@@ -124,8 +110,10 @@ class TaskDispatcher:
         container_mode = config.get("container_mode", "ephemeral")
         container_id = config.get("container_id")
 
-        callback_url = runtime_service.get_callback_url()
-        callback_base_url = runtime_service.get_callback_base_url()
+        callback_base_url = (settings.callback_base_url or "").strip().rstrip("/")
+        if not callback_base_url:
+            raise ValueError("callback_base_url cannot be empty")
+        callback_url = f"{callback_base_url}/api/v1/callback"
         callback_token = settings.callback_token
 
         executor_url = None
@@ -277,15 +265,6 @@ class TaskDispatcher:
 
             step_started = time.perf_counter()
             browser_enabled = bool(resolved_config.get("browser_enabled"))
-            runtime_env = (
-                runtime_service.build_runtime_env(
-                    session_id=session_id,
-                    user_id=user_id,
-                    browser_enabled=browser_enabled,
-                )
-                if not runtime_service.uses_docker_runtime()
-                else {}
-            )
             executor_url, container_id = await TaskDispatcher.resolve_executor_target(
                 session_id=session_id,
                 user_id=user_id,
@@ -331,7 +310,6 @@ class TaskDispatcher:
                 config=resolved_config,
                 callback_base_url=callback_base_url,
                 sdk_session_id=sdk_session_id,
-                runtime_env=runtime_env,
             )
             logger.info(
                 "timing",
@@ -362,8 +340,7 @@ class TaskDispatcher:
         except Exception as e:
             logger.error(f"Failed to dispatch task {task_id}: {e}")
             await backend_client.update_session_status(session_id, "failed")
-            if runtime_service.uses_docker_runtime():
-                await TaskDispatcher.get_container_pool().cancel_task(session_id)
+            await TaskDispatcher.get_container_pool().cancel_task(session_id)
             raise
         finally:
             reset_request_id(request_id_token)
@@ -376,7 +353,5 @@ class TaskDispatcher:
         Args:
             session_id: Session ID
         """
-        if not TaskDispatcher.runtime_service.uses_docker_runtime():
-            return
         container_pool = TaskDispatcher.get_container_pool()
         await container_pool.on_task_complete(session_id)

@@ -60,4 +60,3 @@ class TaskRun(BaseModel):
     sdk_session_id: str | None = None
     callback_base_url: str | None = None
     permission_mode: str = "default"
-    runtime_env: dict[str, str] = Field(default_factory=dict)

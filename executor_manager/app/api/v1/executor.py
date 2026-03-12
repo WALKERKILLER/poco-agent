@@ -8,10 +8,8 @@ from app.schemas.task import (
     TaskCancelRequest,
 )
 from app.scheduler.task_dispatcher import TaskDispatcher
-from app.services.executor_runtime_service import ExecutorRuntimeService
 
 router = APIRouter(prefix="/executor", tags=["executor"])
-runtime_service = ExecutorRuntimeService()
 
 
 @router.post("/cancel", response_model=ResponseSchema[dict])
@@ -24,9 +22,8 @@ async def cancel_task(request: TaskCancelRequest) -> JSONResponse:
     Returns:
         Success response with session_id and status
     """
-    if runtime_service.uses_docker_runtime():
-        container_pool = TaskDispatcher.get_container_pool()
-        await container_pool.cancel_task(request.session_id)
+    container_pool = TaskDispatcher.get_container_pool()
+    await container_pool.cancel_task(request.session_id)
 
     return Response.success(
         data={"session_id": request.session_id, "status": "canceled"},
@@ -44,9 +41,8 @@ async def delete_container(request: ContainerDeleteRequest) -> JSONResponse:
     Returns:
         Success response with container_id and status
     """
-    if runtime_service.uses_docker_runtime():
-        container_pool = TaskDispatcher.get_container_pool()
-        await container_pool.delete_container(request.container_id)
+    container_pool = TaskDispatcher.get_container_pool()
+    await container_pool.delete_container(request.container_id)
 
     return Response.success(
         data={"container_id": request.container_id, "status": "deleted"},
@@ -61,10 +57,7 @@ async def get_executor_load() -> JSONResponse:
     Returns:
         Container statistics response
     """
-    if runtime_service.uses_docker_runtime():
-        container_pool = TaskDispatcher.get_container_pool()
-        stats = container_pool.get_container_stats()
-    else:
-        stats = runtime_service.get_direct_runtime_stats()
+    container_pool = TaskDispatcher.get_container_pool()
+    stats = container_pool.get_container_stats()
 
     return Response.success(data=stats)
