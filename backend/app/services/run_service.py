@@ -19,13 +19,11 @@ from app.services.run_lifecycle_service import RunLifecycleService
 from app.services.usage_service import UsageService
 
 usage_service = UsageService()
+run_lifecycle_service = RunLifecycleService()
 
 
 class RunService:
     """Service layer for run queue operations."""
-
-    def __init__(self) -> None:
-        self._run_lifecycle = RunLifecycleService()
 
     def _extract_prompt_from_message(self, message_content: object) -> str | None:
         if not isinstance(message_content, dict):
@@ -180,7 +178,7 @@ class RunService:
         if db_run.status == "queued":
             db_run.claimed_by = worker_id
         db_run.attempts += 1
-        self._run_lifecycle.mark_running(db, db_run)
+        run_lifecycle_service.mark_running(db, db_run)
         db.commit()
         db.refresh(db_run)
         return RunResponse.model_validate(db_run)
@@ -216,7 +214,7 @@ class RunService:
 
         if db_run.started_at is None:
             db_run.started_at = datetime.now(timezone.utc)
-        self._run_lifecycle.finalize_terminal(
+        run_lifecycle_service.finalize_terminal(
             db,
             db_run,
             status="failed",

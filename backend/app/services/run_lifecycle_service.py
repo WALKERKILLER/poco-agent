@@ -8,12 +8,11 @@ from app.repositories.scheduled_task_repository import ScheduledTaskRepository
 from app.repositories.session_repository import SessionRepository
 from app.services.session_queue_service import SessionQueueService
 
+session_queue_service = SessionQueueService()
+
 
 class RunLifecycleService:
     TERMINAL_STATUSES = {"completed", "failed", "canceled"}
-
-    def __init__(self) -> None:
-        self._session_queue_service = SessionQueueService()
 
     def _sync_scheduled_task_last_status(self, db: Session, db_run: AgentRun) -> None:
         if not db_run.scheduled_task_id:
@@ -44,7 +43,7 @@ class RunLifecycleService:
 
         now = datetime.now(timezone.utc)
         if db_run.status in {"queued", "claimed"}:
-            self._session_queue_service.clear_execution_state(db_session)
+            session_queue_service.clear_execution_state(db_session)
             db_run.status = "running"
         if db_run.started_at is None:
             db_run.started_at = now
@@ -86,7 +85,7 @@ class RunLifecycleService:
         if status == "completed":
             db_run.progress = 100
             db_run.last_error = None
-            promoted_run = self._session_queue_service.promote_next_if_available(
+            promoted_run = session_queue_service.promote_next_if_available(
                 db, db_session
             )
             if promoted_run is None:
@@ -94,10 +93,10 @@ class RunLifecycleService:
         elif status == "failed":
             if error_message:
                 db_run.last_error = error_message
-            self._session_queue_service.pause_active_items(db, db_session.id)
+            session_queue_service.pause_active_items(db, db_session.id)
             db_session.status = "failed"
         elif status == "canceled":
-            self._session_queue_service.cancel_active_items(db, db_session.id)
+            session_queue_service.cancel_active_items(db, db_session.id)
             db_session.status = "canceled"
 
         self._sync_scheduled_task_last_status(db, db_run)
