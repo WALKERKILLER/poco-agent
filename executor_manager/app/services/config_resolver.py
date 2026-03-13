@@ -317,35 +317,6 @@ class ConfigResolver:
             or self._get_first_settings_value(spec["source_base_url_settings_fields"])
             or spec["default_base_url"]
         )
-        logger.warning(
-            "MODEL_EXECUTOR_MANAGER_CONFIG"
-            " user_id=%s"
-            " session_id=%s"
-            " run_id=%s"
-            " selected_model=%s"
-            " explicit_provider_id=%s"
-            " inferred_provider_id=%s"
-            " provider_id=%s"
-            " source_api_key_env_keys=%s"
-            " source_base_url_env_keys=%s"
-            " runtime_api_key_env_key=%s"
-            " runtime_base_url_env_key=%s"
-            " has_api_key=%s"
-            " resolved_base_url=%s",
-            user_id,
-            session_id,
-            run_id,
-            selected_model,
-            explicit_provider_id or None,
-            inferred_provider_id,
-            provider_id,
-            spec["source_api_key_env_keys"],
-            spec["source_base_url_env_keys"],
-            spec["runtime_api_key_env_key"],
-            spec["runtime_base_url_env_key"],
-            bool(api_key),
-            base_url,
-        )
         return {
             spec["runtime_api_key_env_key"]: api_key,
             spec["runtime_base_url_env_key"]: base_url,
