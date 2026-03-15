@@ -27,12 +27,11 @@ from app.services.task_service import TaskService
 
 logger = logging.getLogger(__name__)
 
+task_service = TaskService()
+
 
 class ScheduledTaskService:
     """Service layer for scheduled task management and dispatch."""
-
-    def __init__(self) -> None:
-        self._task_service = TaskService()
 
     @staticmethod
     def _validate_cron(expr: str) -> str:
@@ -120,7 +119,7 @@ class ScheduledTaskService:
 
         # Build a pinned config snapshot using existing TaskService merge logic
         config_snapshot = (
-            self._task_service._build_config_snapshot(  # noqa: SLF001
+            task_service._build_config_snapshot(  # noqa: SLF001
                 db,
                 user_id,
                 request.config,

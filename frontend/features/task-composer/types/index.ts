@@ -1,5 +1,6 @@
 import type { AddTaskOptions } from "@/features/projects/types";
 import type { InputFile } from "@/features/chat/types/api/session";
+import type { ModelSelection } from "@/features/chat/lib/model-catalog";
 import type { RunScheduleMode } from "@/features/task-composer/model/run-schedule";
 
 export type ComposerMode = "plan" | "task" | "scheduled";
@@ -14,6 +15,8 @@ export interface TaskSendOptions {
   project_name?: string | null;
   browser_enabled?: boolean | null;
   memory_enabled?: boolean | null;
+  mcp_config?: Record<string, boolean> | null;
+  skill_config?: Record<string, boolean> | null;
   run_schedule?: {
     schedule_mode: RunScheduleMode;
     timezone: string;
@@ -32,7 +35,7 @@ export interface TaskSubmitInput {
   prompt: string;
   mode: ComposerMode;
   options?: TaskSendOptions;
-  selectedModel?: string | null;
+  selectedModel?: ModelSelection | null;
   projectId?: string;
 }
 

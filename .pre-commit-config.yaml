@@ -7,47 +7,29 @@ repos:
       - id: ruff-format
         name: backend · format
 
-  - repo: local
+  - repo: https://github.com/facebook/pyrefly-pre-commit
+    rev: 0.47.0
     hooks:
-      - id: pyrefly-backend
-        name: backend - typecheck
-        entry: uv run --directory backend --frozen --with pyrefly==0.47.0 pyrefly check
+      - id: pyrefly-check
+        name: backend · typecheck
+        pass_filenames: true
         language: system
-        pass_filenames: false
-        files: ^backend/.*\.pyi?$
 
-      - id: pyrefly-executor
-        name: executor - typecheck
-        entry: uv run --directory executor --frozen --with pyrefly==0.47.0 pyrefly check
-        language: system
-        pass_filenames: false
-        files: ^executor/.*\.pyi?$
-
-      - id: pyrefly-executor-manager
-        name: executor_manager - typecheck
-        entry: uv run --directory executor_manager --frozen --with pyrefly==0.47.0 pyrefly check
-        language: system
-        pass_filenames: false
-        files: ^executor_manager/.*\.pyi?$
-
-      # - id: pyrefly-im
-      #   name: im - typecheck
-      #   entry: uv run --directory im --frozen --with pyrefly==0.47.0 pyrefly check
-      #   language: system
-      #   pass_filenames: false
-      #   files: ^im/.*\.pyi?$
-
-  - repo: local
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.39.1
     hooks:
-      - id: frontend-eslint
-        name: frontend - lint
-        entry: node frontend/node_modules/eslint/bin/eslint.js --config frontend/eslint.config.mjs
-        language: system
+      - id: eslint
+        name: frontend · lint
+        args: ["--config", "frontend/eslint.config.mjs"]
         files: ^frontend/.*\.[jt]sx?$
         types: [file]
+        additional_dependencies:
+          - eslint@9.39.1
+          - eslint-config-next@16.1.1
+          - eslint-config-prettier@10.1.8
 
-      - id: frontend-prettier
-        name: frontend - format
-        entry: node frontend/node_modules/prettier/bin/prettier.cjs --write
-        language: system
-        files: ^frontend/.*\.(css|html|js|jsx|json|md|mjs|ts|tsx|yaml|yml)$
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.7.4
+    hooks:
+      - id: prettier
+        name: frontend · format

@@ -1,5 +1,6 @@
 import { createSessionAction } from "@/features/chat/actions/session-actions";
 import type { TaskConfig } from "@/features/chat/types/api/session";
+import { normalizeModelSelection } from "@/features/chat/lib/model-catalog";
 import { scheduledTasksService } from "@/features/scheduled-tasks/api/scheduled-tasks-api";
 import type {
   TaskSubmitContext,
@@ -20,10 +21,13 @@ function buildTaskConfig(
   const repoUrl = (options.repo_url || "").trim();
   const gitBranch = (options.git_branch || "").trim() || DEFAULT_BRANCH;
   const gitTokenEnvKey = (options.git_token_env_key || "").trim();
-  const selectedModel = (input.selectedModel || "").trim();
+  const selectedModel = normalizeModelSelection(input.selectedModel);
 
-  if (selectedModel) {
-    config.model = selectedModel;
+  if (selectedModel.modelId) {
+    config.model = selectedModel.modelId;
+    if (selectedModel.providerId) {
+      config.model_provider_id = selectedModel.providerId;
+    }
   }
   if (inputFiles.length > 0) {
     config.input_files = inputFiles;
@@ -40,6 +44,12 @@ function buildTaskConfig(
   }
   if (options.memory_enabled) {
     config.memory_enabled = true;
+  }
+  if (options.mcp_config && Object.keys(options.mcp_config).length > 0) {
+    config.mcp_config = options.mcp_config;
+  }
+  if (options.skill_config && Object.keys(options.skill_config).length > 0) {
+    config.skill_config = options.skill_config;
   }
 
   return Object.keys(config).length > 0 ? config : undefined;

@@ -93,17 +93,13 @@ class TaskService:
                 sdk_session_id = session_info.get("sdk_session_id")
                 logger.info(f"Created session {session_id} for task {task_id}")
 
-            container_url = None
             container_id = config.get("container_id")
             container_mode = config.get("container_mode", "ephemeral")
 
             if container_id or container_mode == "persistent":
                 step_started = time.perf_counter()
                 browser_enabled = bool(config.get("browser_enabled"))
-                (
-                    container_url,
-                    container_id,
-                ) = await TaskDispatcher.resolve_executor_target(
+                _, container_id = await TaskDispatcher.resolve_executor_target(
                     session_id=session_id,
                     user_id=user_id,
                     browser_enabled=browser_enabled,
@@ -167,7 +163,6 @@ class TaskService:
                 task_id=task_id,
                 session_id=session_id,
                 status="scheduled",
-                executor_url=container_url,
                 container_id=container_id,
             )
 

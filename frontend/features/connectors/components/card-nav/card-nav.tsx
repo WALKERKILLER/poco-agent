@@ -22,7 +22,6 @@ import { useT } from "@/lib/i18n/client";
 import {
   getStartupPreloadValue,
   hasStartupPreloadValue,
-  invalidateStartupPreloadValues,
 } from "@/lib/startup-preload";
 import { toast } from "sonner";
 import { SkeletonText } from "@/components/ui/skeleton-shimmer";
@@ -33,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useCapabilityToggle } from "@/features/connectors";
 
 const MCP_LIMIT = 3;
 const SKILL_LIMIT = 5;
@@ -75,6 +75,7 @@ export function CardNav({
   const router = useRouter();
   const { lng } = useAppShell();
   const { t } = useT("translation");
+  const capabilityToggle = useCapabilityToggle();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Default trigger text from i18n if not provided
@@ -164,27 +165,41 @@ export function CardNav({
     void fetchData(true);
   }, [fetchData]);
 
-  // Get all installed MCPs
-  const installedMcps: InstalledItem[] = mcpInstalls.map((install) => {
-    const server = mcpServers.find((s) => s.id === install.server_id);
-    return {
-      id: install.server_id,
-      name: server?.name || t("cardNav.fallbackMcp", { id: install.server_id }),
-      enabled: install.enabled,
-      installId: install.id,
-    };
-  });
+  // Get all installed MCPs (merge with context overrides)
+  const installedMcps: InstalledItem[] = useMemo(() => {
+    return mcpInstalls.map((install) => {
+      const server = mcpServers.find((s) => s.id === install.server_id);
+      const contextEnabled = capabilityToggle?.getMcpEnabled(
+        install.server_id,
+        install.enabled,
+      );
+      return {
+        id: install.server_id,
+        name:
+          server?.name || t("cardNav.fallbackMcp", { id: install.server_id }),
+        enabled: contextEnabled ?? install.enabled,
+        installId: install.id,
+      };
+    });
+  }, [mcpInstalls, mcpServers, capabilityToggle, t]);
 
-  // Get all installed Skills
-  const installedSkills: InstalledItem[] = skillInstalls.map((install) => {
-    const skill = skills.find((s) => s.id === install.skill_id);
-    return {
-      id: install.skill_id,
-      name: skill?.name || t("cardNav.fallbackSkill", { id: install.skill_id }),
-      enabled: install.enabled,
-      installId: install.id,
-    };
-  });
+  // Get all installed Skills (merge with context overrides)
+  const installedSkills: InstalledItem[] = useMemo(() => {
+    return skillInstalls.map((install) => {
+      const skill = skills.find((s) => s.id === install.skill_id);
+      const contextEnabled = capabilityToggle?.getSkillEnabled(
+        install.skill_id,
+        install.enabled,
+      );
+      return {
+        id: install.skill_id,
+        name:
+          skill?.name || t("cardNav.fallbackSkill", { id: install.skill_id }),
+        enabled: contextEnabled ?? install.enabled,
+        installId: install.id,
+      };
+    });
+  }, [skillInstalls, skills, capabilityToggle, t]);
 
   // Get all installed Plugins
   const installedPlugins: InstalledItem[] = pluginInstalls.map((install) => {
@@ -198,91 +213,101 @@ export function CardNav({
     };
   });
 
-  // Toggle MCP enabled state
+  // Toggle MCP enabled state (local only, no API call)
   const toggleMcpEnabled = useCallback(
-    async (installId: number, currentEnabled: boolean) => {
+    (installId: number, currentEnabled: boolean) => {
+      const targetInstall = mcpInstalls.find(
+        (install) => install.id === installId,
+      );
+      if (!targetInstall) return;
+
+      const newEnabled = !currentEnabled;
+
       // Check if enabling would exceed the limit
-      const currentEnabledCount = mcpInstalls.filter((i) => i.enabled).length;
-      if (!currentEnabled && currentEnabledCount >= MCP_LIMIT) {
+      const currentEnabledCount = installedMcps.filter((i) => i.enabled).length;
+      if (newEnabled && currentEnabledCount >= MCP_LIMIT) {
         toast.warning(t("hero.warnings.mcpLimitReached"));
         return;
       }
 
-      try {
-        await mcpService.updateInstall(installId, { enabled: !currentEnabled });
-        setMcpInstalls((prev) =>
-          prev.map((install) =>
-            install.id === installId
-              ? { ...install, enabled: !currentEnabled }
-              : install,
-          ),
-        );
-        invalidateStartupPreloadValues(["mcpInstalls"]);
-        if (!currentEnabled) {
-          playInstallSound();
-        }
+      setMcpInstalls((prev) =>
+        prev.map((install) =>
+          install.id === installId
+            ? { ...install, enabled: newEnabled }
+            : install,
+        ),
+      );
 
-        // Check if we've exceeded the limit after enabling
-        const newEnabledCount = !currentEnabled
-          ? currentEnabledCount + 1
-          : currentEnabledCount;
-        if (newEnabledCount > MCP_LIMIT) {
-          toast.warning(
-            t("hero.warnings.tooManyMcps", { count: newEnabledCount }),
-          );
-        }
-      } catch (error) {
-        console.error("[CardNav] Failed to toggle MCP:", error);
+      // Sync with context
+      capabilityToggle?.toggleMcp(targetInstall.server_id, newEnabled);
+
+      if (newEnabled) {
+        playInstallSound();
+      }
+
+      // Check if we've exceeded the limit after enabling
+      const newEnabledCount = newEnabled
+        ? currentEnabledCount + 1
+        : currentEnabledCount;
+      if (newEnabledCount > MCP_LIMIT) {
+        toast.warning(
+          t("hero.warnings.tooManyMcps", { count: newEnabledCount }),
+        );
       }
     },
-    [mcpInstalls, t],
+    [mcpInstalls, installedMcps, capabilityToggle, t],
   );
 
-  // Toggle Skill enabled state
+  // Toggle Skill enabled state (local only, no API call)
   const toggleSkillEnabled = useCallback(
-    async (installId: number, currentEnabled: boolean) => {
+    (installId: number, currentEnabled: boolean) => {
+      const targetInstall = skillInstalls.find(
+        (install) => install.id === installId,
+      );
+      if (!targetInstall) return;
+
+      const newEnabled = !currentEnabled;
+
       // Check if enabling would exceed the limit
-      const currentEnabledCount = skillInstalls.filter((i) => i.enabled).length;
-      if (!currentEnabled && currentEnabledCount >= SKILL_LIMIT) {
+      const currentEnabledCount = installedSkills.filter(
+        (i) => i.enabled,
+      ).length;
+      if (newEnabled && currentEnabledCount >= SKILL_LIMIT) {
         toast.warning(t("hero.warnings.skillLimitReached"));
         return;
       }
 
-      try {
-        await skillsService.updateInstall(installId, {
-          enabled: !currentEnabled,
-        });
-        setSkillInstalls((prev) =>
-          prev.map((install) =>
-            install.id === installId
-              ? { ...install, enabled: !currentEnabled }
-              : install,
-          ),
-        );
-        invalidateStartupPreloadValues(["skillInstalls"]);
-        if (!currentEnabled) {
-          playInstallSound();
-        }
+      setSkillInstalls((prev) =>
+        prev.map((install) =>
+          install.id === installId
+            ? { ...install, enabled: newEnabled }
+            : install,
+        ),
+      );
 
-        // Check if we've exceeded the limit after enabling
-        const newEnabledCount = !currentEnabled
-          ? currentEnabledCount + 1
-          : currentEnabledCount;
-        if (newEnabledCount > SKILL_LIMIT) {
-          toast.warning(
-            t("hero.warnings.tooManySkills", { count: newEnabledCount }),
-          );
-        }
-      } catch (error) {
-        console.error("[CardNav] Failed to toggle Skill:", error);
+      // Sync with context
+      capabilityToggle?.toggleSkill(targetInstall.skill_id, newEnabled);
+
+      if (newEnabled) {
+        playInstallSound();
+      }
+
+      // Check if we've exceeded the limit after enabling
+      const newEnabledCount = newEnabled
+        ? currentEnabledCount + 1
+        : currentEnabledCount;
+      if (newEnabledCount > SKILL_LIMIT) {
+        toast.warning(
+          t("hero.warnings.tooManySkills", { count: newEnabledCount }),
+        );
       }
     },
-    [skillInstalls, t],
+    [skillInstalls, installedSkills, capabilityToggle, t],
   );
 
-  // Toggle Plugin enabled state
+  // Toggle Plugin enabled state (local only, no API call)
   const togglePluginEnabled = useCallback(
-    async (installId: number, currentEnabled: boolean) => {
+    (installId: number, currentEnabled: boolean) => {
       const shouldEnable = !currentEnabled;
       const otherEnabledInstalls = pluginInstalls.filter(
         (install) => install.enabled && install.id !== installId,
@@ -298,60 +323,30 @@ export function CardNav({
         t("cardNav.fallbackPreset", {
           id: targetInstall?.plugin_id ?? installId,
         });
-      const previousInstalls = pluginInstalls;
-      try {
-        if (shouldEnable && otherEnabledInstalls.length > 0) {
-          await pluginsService.bulkUpdateInstalls({
-            enabled: false,
-            install_ids: otherEnabledInstalls.map((install) => install.id),
-          });
-        }
 
-        const updated = await pluginsService.updateInstall(installId, {
-          enabled: shouldEnable,
-        });
-
-        setPluginInstalls((prev) =>
-          prev.map((install) => {
-            if (install.id === installId) {
-              return updated;
-            }
-            if (
-              shouldEnable &&
-              otherEnabledInstalls.some((other) => other.id === install.id)
-            ) {
-              return { ...install, enabled: false };
-            }
-            return install;
-          }),
-        );
-        invalidateStartupPreloadValues(["pluginInstalls"]);
-        if (shouldEnable) {
-          playInstallSound();
-          const extraNote =
-            otherEnabledInstalls.length > 0
-              ? ` ${t("library.pluginsManager.toasts.exclusiveEnabled")}`
-              : "";
-          toast.success(
-            `${targetName} ${t("library.pluginsManager.toasts.enabled")}${extraNote}`,
-          );
-        }
-      } catch (error) {
-        console.error("[CardNav] Failed to toggle Plugin:", error);
-        if (shouldEnable && otherEnabledInstalls.length > 0) {
-          try {
-            await pluginsService.bulkUpdateInstalls({
-              enabled: true,
-              install_ids: otherEnabledInstalls.map((install) => install.id),
-            });
-          } catch (restoreError) {
-            console.error(
-              "[CardNav] Failed to restore preset toggles:",
-              restoreError,
-            );
+      setPluginInstalls((prev) =>
+        prev.map((install) => {
+          if (install.id === installId) {
+            return { ...install, enabled: shouldEnable };
           }
-        }
-        setPluginInstalls(previousInstalls);
+          if (
+            shouldEnable &&
+            otherEnabledInstalls.some((other) => other.id === install.id)
+          ) {
+            return { ...install, enabled: false };
+          }
+          return install;
+        }),
+      );
+      if (shouldEnable) {
+        playInstallSound();
+        const extraNote =
+          otherEnabledInstalls.length > 0
+            ? ` ${t("library.pluginsManager.toasts.exclusiveEnabled")}`
+            : "";
+        toast.success(
+          `${targetName} ${t("library.pluginsManager.toasts.enabled")}${extraNote}`,
+        );
       }
     },
     [pluginInstalls, plugins, t],
@@ -575,28 +570,6 @@ export function CardNav({
               <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full border border-border/60 bg-muted/40 px-2 text-xs text-muted-foreground">
                 +{hiddenPreviewCount}
               </span>
-            ) : null}
-
-            {!isLoading &&
-            previewItems.length === 0 &&
-            hiddenPreviewCount === 0 ? (
-              <span className="text-xs text-muted-foreground">
-                {t("cardNav.comingSoon")}
-              </span>
-            ) : null}
-
-            {showDismiss ? (
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleDismiss();
-                }}
-                className="inline-flex size-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-                aria-label={t("common.close")}
-              >
-                <X className="size-4" />
-              </button>
             ) : null}
           </div>
         </div>

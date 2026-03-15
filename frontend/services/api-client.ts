@@ -73,9 +73,11 @@ export const API_ENDPOINTS = {
 
   // Search
   search: "/search",
+  capabilityRecommendations: "/capability-recommendations",
 
   // Models
   models: "/models",
+  modelProvider: (providerId: string) => `/models/providers/${providerId}`,
 
   // Runs
   runsBySession: (sessionId: string) => `/runs/session/${sessionId}`,

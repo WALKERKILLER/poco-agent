@@ -55,6 +55,7 @@ import {
   useBackendPreference,
   type BackendOption,
 } from "@/features/settings/hooks/use-backend-preference";
+import { useModelProviderSettings } from "@/features/settings/hooks/use-model-provider-settings";
 import { useSettingsLanguage } from "@/features/settings/hooks/use-settings-language";
 import { useUsageAnalytics } from "@/features/settings/hooks/use-usage-analytics";
 import { formatMonthLabel } from "@/features/settings/lib/usage-analytics";
@@ -83,20 +84,6 @@ type SettingOption = {
 
 const MOBILE_SHEET_CLOSE_THRESHOLD = 140;
 
-const DEFAULT_OPENAI_CONFIG: ApiProviderConfig = {
-  enabled: false,
-  key: "",
-  useCustomBaseUrl: false,
-  baseUrl: "https://api.openai.com/v1",
-};
-
-const DEFAULT_ANTHROPIC_CONFIG: ApiProviderConfig = {
-  enabled: false,
-  key: "",
-  useCustomBaseUrl: false,
-  baseUrl: "https://api.anthropic.com",
-};
-
 export function SettingsDialog({
   open,
   onOpenChange,
@@ -115,11 +102,16 @@ export function SettingsDialog({
     tabRequest?.tab ?? "account",
   );
   const [mobileView, setMobileView] = React.useState<MobileView>("overview");
-  const [isGlmEnabled, setIsGlmEnabled] = React.useState(true);
-  const [openAiConfig, setOpenAiConfig] = React.useState(DEFAULT_OPENAI_CONFIG);
-  const [anthropicConfig, setAnthropicConfig] = React.useState(
-    DEFAULT_ANTHROPIC_CONFIG,
-  );
+
+  const {
+    providerConfigs,
+    isLoading: isLoadingProviders,
+    setProviderPatch,
+    saveProvider,
+    clearCustomProvider,
+  } = useModelProviderSettings({
+    enabled: open,
+  });
 
   const isUsageViewActive =
     open && (activeTab === "usage" || mobileView === "usage");
@@ -310,20 +302,6 @@ export function SettingsDialog({
     }
   }, [open, tabRequest, isMobile]);
 
-  const updateOpenAiConfig = React.useCallback(
-    (patch: Partial<ApiProviderConfig>) => {
-      setOpenAiConfig((prev) => ({ ...prev, ...patch }));
-    },
-    [],
-  );
-
-  const updateAnthropicConfig = React.useCallback(
-    (patch: Partial<ApiProviderConfig>) => {
-      setAnthropicConfig((prev) => ({ ...prev, ...patch }));
-    },
-    [],
-  );
-
   const handleLogout = React.useCallback(() => {
     router.push("/login");
     handleClose();
@@ -372,12 +350,11 @@ export function SettingsDialog({
     if (activeTab === "models") {
       return (
         <ModelsSettingsTab
-          isGlmEnabled={isGlmEnabled}
-          openAiConfig={openAiConfig}
-          anthropicConfig={anthropicConfig}
-          onToggleGlm={setIsGlmEnabled}
-          onUpdateOpenAiConfig={updateOpenAiConfig}
-          onUpdateAnthropicConfig={updateAnthropicConfig}
+          providers={providerConfigs}
+          isLoading={isLoadingProviders}
+          onChangeProvider={setProviderPatch}
+          onSaveProvider={saveProvider}
+          onClearProvider={clearCustomProvider}
         />
       );
     }
@@ -395,7 +372,7 @@ export function SettingsDialog({
   };
 
   const renderMobileSecondary = () => (
-    <div className="min-h-0 flex-1 overflow-hidden rounded-3xl border border-border/50 bg-card/70">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-border/50 bg-card/70">
       {renderContent()}
     </div>
   );

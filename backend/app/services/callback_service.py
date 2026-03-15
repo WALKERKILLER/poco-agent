@@ -26,6 +26,10 @@ from app.utils.usage import normalize_usage_payload
 
 logger = logging.getLogger(__name__)
 
+run_lifecycle_service = RunLifecycleService()
+session_queue_service = SessionQueueService()
+session_service = SessionService()
+
 
 class CallbackService:
     """Service layer for processing executor callbacks."""
@@ -60,7 +64,7 @@ class CallbackService:
                 if db_session is not None:
                     return db_session, db_run
 
-        session_ref = self._session_service.find_session_by_sdk_id_or_uuid(
+        session_ref = session_service.find_session_by_sdk_id_or_uuid(
             db, callback.session_id
         )
         if session_ref is None:
@@ -473,16 +477,16 @@ class CallbackService:
         if db_run is not None:
             db_run.progress = int(callback.progress or 0)
             if callback.status == CallbackStatus.RUNNING:
-                self._run_lifecycle.mark_running(db, db_run)
+                run_lifecycle_service.mark_running(db, db_run)
             elif callback.status == CallbackStatus.COMPLETED:
                 db_run.progress = 100
-                self._run_lifecycle.finalize_terminal(
+                run_lifecycle_service.finalize_terminal(
                     db,
                     db_run,
                     status=callback.status.value,
                 )
             elif callback.status == CallbackStatus.FAILED:
-                self._run_lifecycle.finalize_terminal(
+                run_lifecycle_service.finalize_terminal(
                     db,
                     db_run,
                     status=callback.status.value,
@@ -495,10 +499,10 @@ class CallbackService:
 
         if callback.status == CallbackStatus.COMPLETED:
             blocking_run = RunRepository.get_blocking_by_session(db, db_session.id)
-            if blocking_run is None and self._session_queue.has_active_items(
+            if blocking_run is None and session_queue_service.has_active_items(
                 db, db_session.id
             ):
-                promoted_run = self._session_queue.promote_next_if_available(
+                promoted_run = session_queue_service.promote_next_if_available(
                     db, db_session
                 )
                 if promoted_run is not None:

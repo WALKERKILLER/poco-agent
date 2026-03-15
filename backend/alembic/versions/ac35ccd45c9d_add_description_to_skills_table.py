@@ -1,7 +1,7 @@
 """add description to skills table
 
 Revision ID: ac35ccd45c9d
-Revises: 74e90ae3d7a1
+Revises: 98b9968cc9be
 Create Date: 2026-03-12 13:30:51.323371
 
 """
@@ -14,7 +14,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "ac35ccd45c9d"
-down_revision: Union[str, Sequence[str], None] = "74e90ae3d7a1"
+down_revision: Union[str, Sequence[str], None] = "98b9968cc9be"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
