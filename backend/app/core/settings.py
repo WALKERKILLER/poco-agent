@@ -54,9 +54,7 @@ class Settings(BaseSettings):
     frontend_public_url: str = Field(
         default="http://localhost:3000", alias="FRONTEND_PUBLIC_URL"
     )
-    frontend_default_language: str = Field(
-        default="zh", alias="FRONTEND_DEFAULT_LANG"
-    )
+    frontend_default_language: str = Field(default="zh", alias="FRONTEND_DEFAULT_LANG")
 
     telegram_bot_token: str = Field(default="", alias="TELEGRAM_BOT_TOKEN")
     telegram_webhook_secret_token: str | None = Field(
@@ -67,9 +65,7 @@ class Settings(BaseSettings):
     dingtalk_webhook_token: str | None = Field(
         default=None, alias="DINGTALK_WEBHOOK_TOKEN"
     )
-    dingtalk_stream_enabled: bool = Field(
-        default=True, alias="DINGTALK_STREAM_ENABLED"
-    )
+    dingtalk_stream_enabled: bool = Field(default=True, alias="DINGTALK_STREAM_ENABLED")
     dingtalk_stream_subscribe_events: bool = Field(
         default=False, alias="DINGTALK_STREAM_SUBSCRIBE_EVENTS"
     )
@@ -82,14 +78,10 @@ class Settings(BaseSettings):
         default="https://api.dingtalk.com",
         alias="DINGTALK_OPEN_BASE_URL",
     )
-    dingtalk_webhook_url: str | None = Field(
-        default=None, alias="DINGTALK_WEBHOOK_URL"
-    )
+    dingtalk_webhook_url: str | None = Field(default=None, alias="DINGTALK_WEBHOOK_URL")
 
     feishu_enabled: bool = Field(default=False, alias="FEISHU_ENABLED")
-    feishu_stream_enabled: bool = Field(
-        default=True, alias="FEISHU_STREAM_ENABLED"
-    )
+    feishu_stream_enabled: bool = Field(default=True, alias="FEISHU_STREAM_ENABLED")
     feishu_app_id: str | None = Field(default=None, alias="FEISHU_APP_ID")
     feishu_app_secret: str | None = Field(default=None, alias="FEISHU_APP_SECRET")
     feishu_verification_token: str | None = Field(

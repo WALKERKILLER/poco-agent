@@ -12,6 +12,7 @@ router = APIRouter(prefix="/webhooks/dingtalk", tags=["dingtalk"])
 
 _LEADING_MENTION_RE = re.compile(r"^[@＠][^\s]+\s*")
 
+
 @router.post("")
 async def webhook(
     request: Request,
