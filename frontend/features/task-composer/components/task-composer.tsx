@@ -22,6 +22,8 @@ import { useMemoryFeatureEnabled } from "@/hooks/use-memory-feature-enabled";
 import { useFileDropUpload } from "@/features/task-composer/hooks/use-file-drop-upload";
 import { useFileUpload } from "@/features/task-composer/hooks/use-file-upload";
 import { appendTranscribedText, useVoiceInput } from "@/features/voice";
+import { playInstallSound } from "@/lib/utils/sound";
+import { useCapabilityToggle } from "@/features/connectors";
 import type { RunScheduleMode } from "@/features/task-composer/model/run-schedule";
 import type {
   ComposerMode,
@@ -84,9 +86,13 @@ export function TaskComposer({
   const { t } = useT("translation");
   const { lng } = useAppShell();
   const memoryFeatureEnabled = useMemoryFeatureEnabled();
+  const capabilityToggle = useCapabilityToggle();
   const isComposing = React.useRef(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const latestValueRef = React.useRef(value);
+  const trackedCapabilityItemsRef = React.useRef<CapabilityRecommendation[]>(
+    [],
+  );
 
   React.useEffect(() => {
     latestValueRef.current = value;
@@ -131,7 +137,7 @@ export function TaskComposer({
   const [skillConfig, setSkillConfig] = React.useState<Record<string, boolean>>(
     {},
   );
-  const [selectedCapabilityItems, setSelectedCapabilityItems] = React.useState<
+  const [trackedCapabilityItems, setTrackedCapabilityItems] = React.useState<
     CapabilityRecommendation[]
   >([]);
 
@@ -166,6 +172,16 @@ export function TaskComposer({
     enabled: !isSubmitting,
     limit: 3,
   });
+  const showRecommendationEmptyState =
+    capabilityRecommendations.hasFetched &&
+    value.trim().length >= capabilityRecommendations.minQueryLength;
+  const hasInput = value.trim().length > 0;
+  const showRecommendationsInFooter =
+    hasInput &&
+    (capabilityRecommendations.isLoading ||
+      capabilityRecommendations.items.length > 0 ||
+      trackedCapabilityItems.length > 0 ||
+      showRecommendationEmptyState);
 
   // ---- Derived values ----
   const firstLine =
@@ -200,6 +216,26 @@ export function TaskComposer({
     if (memoryFeatureEnabled) return;
     setMemoryEnabled(false);
   }, [memoryFeatureEnabled]);
+
+  React.useEffect(() => {
+    trackedCapabilityItemsRef.current = trackedCapabilityItems;
+  }, [trackedCapabilityItems]);
+
+  // Reset capability recommendation state when input is cleared
+  React.useEffect(() => {
+    if (value.trim().length > 0) return;
+    const prev = trackedCapabilityItemsRef.current;
+    for (const item of prev) {
+      if (item.type === "mcp") {
+        capabilityToggle?.toggleMcp(item.id, item.default_enabled);
+      } else {
+        capabilityToggle?.toggleSkill(item.id, item.default_enabled);
+      }
+    }
+    setTrackedCapabilityItems([]);
+    setMcpConfig({});
+    setSkillConfig({});
+  }, [value, capabilityToggle]);
 
   // Default scheduled name from input
   React.useEffect(() => {
@@ -298,7 +334,7 @@ export function TaskComposer({
     upload.clearAttachments();
     setMcpConfig({});
     setSkillConfig({});
-    setSelectedCapabilityItems([]);
+    setTrackedCapabilityItems([]);
     setRunScheduleMode("immediate");
     setRunScheduledAt(null);
   }, [
@@ -330,40 +366,62 @@ export function TaskComposer({
     voiceInput.isBusy,
   ]);
 
-  const handleApplyCapability = React.useCallback(
+  const isCapabilityEnabled = React.useCallback(
     (item: CapabilityRecommendation) => {
       const key = String(item.id);
+      const override = item.type === "mcp" ? mcpConfig[key] : skillConfig[key];
+      return typeof override === "boolean" ? override : item.default_enabled;
+    },
+    [mcpConfig, skillConfig],
+  );
+
+  const handleToggleCapability = React.useCallback(
+    (item: CapabilityRecommendation, enabled: boolean) => {
+      const key = String(item.id);
+
+      const updateToggleMap = (prev: Record<string, boolean>) => {
+        if (enabled === item.default_enabled) {
+          const next = { ...prev };
+          delete next[key];
+          return next;
+        }
+        return { ...prev, [key]: enabled };
+      };
+
       if (item.type === "mcp") {
-        setMcpConfig((prev) => ({ ...prev, [key]: true }));
+        setMcpConfig(updateToggleMap);
+        capabilityToggle?.toggleMcp(item.id, enabled);
       } else {
-        setSkillConfig((prev) => ({ ...prev, [key]: true }));
+        setSkillConfig(updateToggleMap);
+        capabilityToggle?.toggleSkill(item.id, enabled);
       }
-      setSelectedCapabilityItems((prev) => {
-        const exists = prev.some(
+
+      if (enabled) {
+        playInstallSound();
+      }
+
+      setTrackedCapabilityItems((prev) => {
+        const existingIndex = prev.findIndex(
           (entry) => entry.type === item.type && entry.id === item.id,
         );
-        if (exists) return prev;
+
+        if (enabled === item.default_enabled) {
+          if (existingIndex === -1) {
+            return prev;
+          }
+          return prev.filter((_, index) => index !== existingIndex);
+        }
+
+        if (existingIndex !== -1) {
+          return prev.map((entry, index) =>
+            index === existingIndex ? item : entry,
+          );
+        }
+
         return [...prev, item];
       });
     },
-    [],
-  );
-
-  const handleRemoveCapability = React.useCallback(
-    (item: CapabilityRecommendation) => {
-      const key = String(item.id);
-      if (item.type === "mcp") {
-        setMcpConfig((prev) => ({ ...prev, [key]: false }));
-      } else {
-        setSkillConfig((prev) => ({ ...prev, [key]: false }));
-      }
-      setSelectedCapabilityItems((prev) =>
-        prev.filter(
-          (entry) => !(entry.type === item.type && entry.id === item.id),
-        ),
-      );
-    },
-    [],
+    [capabilityToggle],
   );
 
   // ---- Render ----
@@ -500,18 +558,6 @@ export function TaskComposer({
           />
         </div>
 
-        <CapabilityRecommendations
-          recommendations={capabilityRecommendations.items}
-          selectedItems={selectedCapabilityItems}
-          isLoading={capabilityRecommendations.isLoading}
-          showEmptyState={
-            capabilityRecommendations.hasFetched &&
-            value.trim().length >= capabilityRecommendations.minQueryLength
-          }
-          onApply={handleApplyCapability}
-          onRemove={handleRemoveCapability}
-        />
-
         {/* Bottom toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 pb-4">
           <div className="flex-1 min-w-0">
@@ -549,6 +595,20 @@ export function TaskComposer({
           <div className="border-t border-border/60">{bottomAddon}</div>
         ) : null}
       </div>
+
+      {showRecommendationsInFooter ? (
+        <div className="mt-3">
+          <CapabilityRecommendations
+            recommendations={capabilityRecommendations.items}
+            trackedItems={trackedCapabilityItems}
+            isLoading={capabilityRecommendations.isLoading}
+            showEmptyState={showRecommendationEmptyState}
+            isEnabled={isCapabilityEnabled}
+            onToggle={handleToggleCapability}
+            footerMode
+          />
+        </div>
+      ) : null}
 
       {fileDrop.isDragActive ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm">

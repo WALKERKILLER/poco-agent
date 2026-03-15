@@ -47,6 +47,15 @@
   },
   "hero": {
     "title": "What can I do for you?",
+    "rotatingWords": [
+      "Create slides",
+      "Search for information",
+      "Make mind maps",
+      "Analyze GitHub repos",
+      "Analyze data",
+      "Plan trips",
+      "Write code"
+    ],
     "subtitle": "Assign a task, or ask any question.",
     "uploadFile": "Upload file",
     "dragDrop": {
@@ -66,7 +75,7 @@
       "planDefault": "Plan first, then execute. Best for complex tasks.",
       "shortcutHint": "/ for Slash Command, Shift+Enter for new line, Enter to send"
     },
-    "tools": "Connect your tools to Poco",
+    "tools": "Give Poco more capabilities",
     "importFigma": "Import from Figma (coming soon)",
     "connect": "Connect",
     "configure": "Configure",
@@ -189,7 +198,8 @@
       "noDescription": "No description provided",
       "remove": "Remove {{name}}",
       "mcpLabel": "MCP",
-      "skillLabel": "Skill"
+      "skillLabel": "Skill",
+      "hint": "Based on your task, Poco recommends the above capabilities for you. Click to load."
     },
     "warnings": {
       "tooManyMcps": "Too many MCP servers enabled ({{count}}). This may slow down system loading and reduce performance.",
@@ -1628,7 +1638,7 @@
     "apps": "Apps",
     "comingSoon": "Coming soon",
     "clickForDetails": "Click for details",
-    "connectTools": "Connect your tools to Poco"
+    "connectTools": "Give Poco more capabilities"
   },
   "fileChange": {
     "previewDisabled": "Executing, preview not available",

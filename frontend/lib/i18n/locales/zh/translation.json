@@ -47,6 +47,15 @@
   },
   "hero": {
     "title": "我能为你做什么？",
+    "rotatingWords": [
+      "做 PPT",
+      "搜索资料",
+      "做思维导图",
+      "分析 Github 仓库",
+      "分析数据",
+      "旅行规划",
+      "编写程序"
+    ],
     "subtitle": "分配一个任务，或提出任何问题。",
     "uploadFile": "上传文件",
     "dragDrop": {
@@ -66,7 +75,7 @@
       "planDefault": "先规划计划，再执行任务，适合复杂任务",
       "shortcutHint": "/ 使用 Slash Command，shift+enter 换行，enter 发送"
     },
-    "tools": "将你的工具连接到 Poco",
+    "tools": "为 Poco 赋予更多能力",
     "importFigma": "从 Figma 导入 (即将推出)",
     "connect": "连接",
     "configure": "配置",
@@ -189,7 +198,8 @@
       "noDescription": "暂无描述",
       "remove": "移除 {{name}}",
       "mcpLabel": "MCP",
-      "skillLabel": "技能"
+      "skillLabel": "技能",
+      "hint": "根据你的任务，Poco 为你推荐以上能力，点击加载"
     },
     "warnings": {
       "tooManyMcps": "启用的 MCP 服务器过多（{{count}} 个），可能会导致系统加载变慢、性能下降。",
@@ -1625,7 +1635,7 @@
     "apps": "应用",
     "comingSoon": "即将推出",
     "clickForDetails": "点击查看详情",
-    "connectTools": "将您的工具连接到 Poco",
+    "connectTools": "为 Poco 赋予更多能力",
     "turnOffAll": "一键关闭",
     "noMcpInstalled": "未安装 MCP",
     "noSkillsInstalled": "未安装技能"

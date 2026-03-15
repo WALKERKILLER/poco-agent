@@ -45,6 +45,15 @@
   },
   "hero": {
     "title": "何かお手伝いできることはありますか？",
+    "rotatingWords": [
+      "スライド作成",
+      "資料検索",
+      "マインドマップ作成",
+      "GitHub リポジトリ分析",
+      "データ分析",
+      "旅行計画",
+      "コード作成"
+    ],
     "subtitle": "タスクを割り当てるか、質問してください。",
     "uploadFile": "ファイルをアップロード",
     "dragDrop": {
@@ -175,6 +184,20 @@
       "toggleServer": "{{name}} を切り替え",
       "cancel": "キャンセル",
       "confirm": "確認"
+    },
+    "capabilityRecommendations": {
+      "title": "おすすめの機能",
+      "selectedTitle": "このタスクで有効",
+      "loading": "一致する項目を検索中...",
+      "empty": "この入力に一致するMCPまたはスキルが見つかりませんでした。",
+      "useForTask": "このタスクで使用",
+      "added": "追加済み",
+      "enabledByDefault": "デフォルトで有効",
+      "noDescription": "説明がありません",
+      "remove": "{{name}}を削除",
+      "mcpLabel": "MCP",
+      "skillLabel": "スキル",
+      "hint": "タスクに基づいて、Pocoが上記の機能をおすすめします。クリックして読み込み。"
     },
     "warnings": {
       "tooManyMcps": "有効なMCPサーバーが多すぎます（{{count}}個）。システムの読み込みが遅くなり、パフォーマンスが低下する可能性があります。",

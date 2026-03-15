@@ -36,6 +36,7 @@ interface CapabilitySourceAvatarProps {
   source?: SourceInfo | null;
   status?: "active" | "inactive" | "error";
   className?: string;
+  statusDotClassName?: string;
 }
 
 const STATUS_DOT_CLASS: Record<
@@ -65,6 +66,7 @@ export function CapabilitySourceAvatar({
   source,
   status = "inactive",
   className,
+  statusDotClassName,
 }: CapabilitySourceAvatarProps) {
   const hasSource = source !== null && source !== undefined;
   const SourceIcon = hasSource
@@ -92,6 +94,7 @@ export function CapabilitySourceAvatar({
         className={cn(
           "absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border border-background",
           STATUS_DOT_CLASS[status],
+          statusDotClassName,
         )}
       />
     </>

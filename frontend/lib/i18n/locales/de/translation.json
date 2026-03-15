@@ -46,6 +46,15 @@
   },
   "hero": {
     "title": "Was kann ich für dich tun?",
+    "rotatingWords": [
+      "Präsentationen erstellen",
+      "Recherchieren",
+      "Mindmaps erstellen",
+      "GitHub-Repos analysieren",
+      "Daten analysieren",
+      "Reisen planen",
+      "Code schreiben"
+    ],
     "subtitle": "Weise eine Aufgabe zu oder stelle eine Frage.",
     "uploadFile": "Datei hochladen",
     "dragDrop": {
@@ -176,6 +185,20 @@
       "toggleServer": "{{name}} umschalten",
       "cancel": "Abbrechen",
       "confirm": "Bestätigen"
+    },
+    "capabilityRecommendations": {
+      "title": "Empfohlene Fähigkeiten",
+      "selectedTitle": "Für diese Aufgabe aktiviert",
+      "loading": "Suche nach Übereinstimmungen...",
+      "empty": "Keine passenden MCPs oder Skills für diese Eingabe gefunden.",
+      "useForTask": "Für diese Aufgabe verwenden",
+      "added": "Hinzugefügt",
+      "enabledByDefault": "Bereits aktiviert",
+      "noDescription": "Keine Beschreibung vorhanden",
+      "remove": "{{name}} entfernen",
+      "mcpLabel": "MCP",
+      "skillLabel": "Skill",
+      "hint": "Basierend auf deiner Aufgabe empfiehlt Poco dir die oben genannten Fähigkeiten. Klicke zum Laden."
     },
     "warnings": {
       "tooManyMcps": "Zu viele MCP-Server aktiviert ({{count}}). Dies kann das Systemladen verlangsamen und die Leistung beeinträchtigen.",
