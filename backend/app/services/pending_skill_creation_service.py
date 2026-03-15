@@ -8,18 +8,16 @@ from app.core.errors.error_codes import ErrorCode
 from app.core.errors.exceptions import AppException
 from app.models.agent_session import AgentSession
 from app.models.pending_skill_creation import PendingSkillCreation
-from app.models.skill import Skill
-from app.models.user_skill_install import UserSkillInstall
 from app.repositories.pending_skill_creation_repository import (
     PendingSkillCreationRepository,
 )
 from app.repositories.skill_repository import SkillRepository
 from app.repositories.tool_execution_repository import ToolExecutionRepository
-from app.repositories.user_skill_install_repository import UserSkillInstallRepository
 from app.schemas.pending_skill_creation import (
     PendingSkillCreationConfirmRequest,
     PendingSkillCreationResponse,
 )
+from app.services.skill_workspace_service import SkillWorkspaceService
 from app.services.storage_service import S3StorageService
 from app.utils.markdown_front_matter import parse_yaml_front_matter
 from app.utils.workspace_manifest import extract_manifest_files, normalize_manifest_path
@@ -31,6 +29,9 @@ _PENDING_STATUSES = {"pending", "failed", "creating"}
 class PendingSkillCreationService:
     def __init__(self, storage_service: S3StorageService | None = None) -> None:
         self.storage_service = storage_service
+        self.skill_workspace_service = SkillWorkspaceService(
+            storage_service=storage_service
+        )
 
     def detect_and_create_pending(
         self,
@@ -157,21 +158,25 @@ class PendingSkillCreationService:
         db.flush()
 
         try:
-            skill = self._commit_pending_skill(
+            session = self._get_session_for_pending(db, pending)
+            result = self.skill_workspace_service.create_skill_from_workspace(
                 db,
                 user_id=user_id,
-                pending=pending,
-                final_name=final_name,
-                existing_skill=existing_skill if request.overwrite else None,
+                session=session,
+                folder_path=pending.skill_relative_path,
+                skill_name=final_name,
+                overwrite=request.overwrite,
+                pending_creation_id=pending.id,
             )
             pending.status = "success"
-            pending.skill_id = skill.id
+            pending.skill_id = result.skill_id
             pending.error = None
             pending.result = {
-                "skill_id": skill.id,
-                "skill_name": skill.name,
-                "overwritten": existing_skill is not None,
+                "skill_id": result.skill_id,
+                "skill_name": result.name,
+                "overwritten": result.overwritten,
             }
+            pending.description = result.description
             db.commit()
             db.refresh(pending)
             return self._to_response(pending)
@@ -196,105 +201,12 @@ class PendingSkillCreationService:
                 message="Cannot cancel a completed skill creation",
             )
         pending.status = "canceled"
-        pending.error = reason.strip()[:1000] if isinstance(reason, str) and reason.strip() else None
+        pending.error = (
+            reason.strip()[:1000] if isinstance(reason, str) and reason.strip() else None
+        )
         db.commit()
         db.refresh(pending)
         return self._to_response(pending)
-
-    def _commit_pending_skill(
-        self,
-        db: Session,
-        *,
-        user_id: str,
-        pending: PendingSkillCreation,
-        final_name: str,
-        existing_skill: Skill | None,
-    ) -> Skill:
-        workspace_prefix = (pending.workspace_files_prefix or "").strip().rstrip("/")
-        if not workspace_prefix:
-            raise AppException(
-                error_code=ErrorCode.BAD_REQUEST,
-                message="Workspace files prefix is missing",
-            )
-
-        relative_path = normalize_manifest_path(pending.skill_relative_path)
-        if not relative_path:
-            raise AppException(
-                error_code=ErrorCode.BAD_REQUEST,
-                message="Invalid pending skill relative path",
-            )
-
-        source_prefix = f"{workspace_prefix}/{relative_path.lstrip('/')}"
-        skill_markdown_key = f"{source_prefix}/SKILL.md"
-        storage_service = self._storage_service()
-        if not storage_service.exists(skill_markdown_key):
-            raise AppException(
-                error_code=ErrorCode.NOT_FOUND,
-                message="Generated skill files are not available in workspace export",
-            )
-
-        version_id = str(uuid.uuid4())
-        destination_prefix = f"skills/{user_id}/{final_name}/{version_id}"
-        copied = storage_service.copy_prefix(
-            source_prefix=source_prefix,
-            destination_prefix=destination_prefix,
-        )
-        if copied == 0:
-            raise AppException(
-                error_code=ErrorCode.BAD_REQUEST,
-                message="No skill files found to create",
-            )
-
-        description = pending.description
-        if description is None:
-            description = self._extract_description_from_key(skill_markdown_key)
-
-        source = {
-            "kind": "skill-creator",
-            "session_id": str(pending.session_id),
-            "pending_creation_id": str(pending.id),
-        }
-        entry = {
-            "s3_key": f"{destination_prefix}/",
-            "is_prefix": True,
-        }
-
-        overwritten = existing_skill is not None
-        if existing_skill is None:
-            skill = Skill(
-                name=final_name,
-                description=description,
-                scope="user",
-                owner_user_id=user_id,
-                entry=entry,
-                source=source,
-            )
-            SkillRepository.create(db, skill)
-            db.flush()
-        else:
-            skill = existing_skill
-            skill.name = final_name
-            skill.description = description
-            skill.entry = entry
-            skill.source = source
-            db.flush()
-
-        install = UserSkillInstallRepository.get_by_user_and_skill(db, user_id, skill.id)
-        if install is None:
-            UserSkillInstallRepository.create(
-                db,
-                UserSkillInstall(user_id=user_id, skill_id=skill.id, enabled=True),
-            )
-        else:
-            install.enabled = True
-
-        pending.description = description
-        pending.result = {
-            "skill_id": skill.id,
-            "skill_name": skill.name,
-            "overwritten": overwritten,
-        }
-        return skill
 
     def _get_owned_creation(
         self,
@@ -319,6 +231,23 @@ class PendingSkillCreationService:
             return None
         normalized = description.strip()
         return normalized[:1000] if normalized else None
+
+    @staticmethod
+    def _get_session_for_pending(
+        db: Session,
+        pending: PendingSkillCreation,
+    ) -> AgentSession:
+        session = (
+            db.query(AgentSession)
+            .filter(AgentSession.id == pending.session_id)
+            .first()
+        )
+        if session is None:
+            raise AppException(
+                error_code=ErrorCode.NOT_FOUND,
+                message=f"Session not found: {pending.session_id}",
+            )
+        return session
 
     @staticmethod
     def _match_tool_use_id(
