@@ -109,6 +109,7 @@ export const API_ENDPOINTS = {
   // Skills
   skills: "/skills",
   skill: (skillId: number) => `/skills/${skillId}`,
+  skillFiles: (skillId: number) => `/skills/${skillId}/files`,
   skillImportDiscover: "/skills/import/discover",
   skillImportCommit: "/skills/import/commit",
   skillImportJob: (jobId: string) => `/skills/import/jobs/${jobId}`,

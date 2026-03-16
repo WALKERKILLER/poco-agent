@@ -1121,7 +1121,11 @@
         "actionFailed": "操作失败，请稍后再试"
       },
       "empty": "暂无技能",
-      "unknownSkill": "未知技能"
+      "unknownSkill": "未知技能",
+      "sections": {
+        "system": "系统内置 Skills",
+        "custom": "自定义 Skills"
+      }
     },
     "skillsImport": {
       "title": "导入技能",
@@ -1360,6 +1364,32 @@
     "presetsPage": {
       "header": {
         "title": "预设"
+      }
+    },
+    "skillSettings": {
+      "title": "Skill 配置",
+      "subtitle": "预览 Skill 文件，并修改可编辑的配置项。",
+      "previewHint": "从左侧选择文件即可预览完整内容。",
+      "loadingFiles": "正在加载 Skill 文件…",
+      "emptyFiles": "当前 Skill 没有可预览的文件。",
+      "nameLabel": "Skill 名称",
+      "namePlaceholder": "输入 Skill 名称",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "为这个 Skill 补充一段说明",
+      "storagePathLabel": "存储路径",
+      "storagePathUnavailable": "暂无可用的存储路径。",
+      "readonlyHint": "系统内置 Skill 为只读，这里可预览文件，但不可编辑。",
+      "nameConflict": "已存在同名 Skill。",
+      "toasts": {
+        "saved": "Skill 已更新",
+        "saveFailed": "更新 Skill 失败"
+      },
+      "source": {
+        "system": "系统内置",
+        "github": "GitHub",
+        "zip": "ZIP 包",
+        "manual": "手动创建",
+        "unknown": "未知来源"
       }
     }
   },
