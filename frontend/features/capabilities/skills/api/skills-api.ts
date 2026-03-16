@@ -14,7 +14,22 @@ import type {
   SkillImportCommitInput,
   SkillImportCommitEnqueueResponse,
   SkillImportJobStatusResponse,
+  SkillsMpImportDiscoverInput,
+  SkillsMpRecommendationsResponse,
+  SkillsMpSearchResponse,
 } from "@/features/capabilities/skills/types";
+
+function buildQuery(
+  params: Record<string, string | number | undefined | null>,
+): string {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null || value === "") continue;
+    searchParams.set(key, String(value));
+  }
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
+}
 
 function emitSlashCommandSuggestionsInvalidated(): void {
   markSlashCommandSuggestionsInvalidated();
@@ -149,6 +164,36 @@ export const skillsService = {
     return apiClient.get<SkillImportJobStatusResponse>(
       API_ENDPOINTS.skillImportJob(jobId),
       { cache: "no-store" },
+    );
+  },
+
+  searchMarketplaceSkills: async (params: {
+    q: string;
+    page?: number;
+    page_size?: number;
+  }): Promise<SkillsMpSearchResponse> => {
+    return apiClient.get<SkillsMpSearchResponse>(
+      `${API_ENDPOINTS.skillsMarketplaceSearch}${buildQuery(params)}`,
+      { cache: "no-store" },
+    );
+  },
+
+  listMarketplaceRecommendations: async (params?: {
+    limit?: number;
+  }): Promise<SkillsMpRecommendationsResponse> => {
+    return apiClient.get<SkillsMpRecommendationsResponse>(
+      `${API_ENDPOINTS.skillsMarketplaceRecommendations}${buildQuery(params ?? {})}`,
+      { cache: "no-store" },
+    );
+  },
+
+  marketplaceImportDiscover: async (
+    input: SkillsMpImportDiscoverInput,
+  ): Promise<SkillImportDiscoverResponse> => {
+    return apiClient.post<SkillImportDiscoverResponse>(
+      API_ENDPOINTS.skillsMarketplaceImportDiscover,
+      input,
+      { timeoutMs: 5 * 60_000 },
     );
   },
 

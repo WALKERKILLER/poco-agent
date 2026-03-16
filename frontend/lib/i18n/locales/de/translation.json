@@ -1122,7 +1122,8 @@
       "tabs": {
         "zip": "Zip hochladen",
         "github": "GitHub-URL",
-        "command": "Import per npx-Befehl"
+        "command": "Import per npx-Befehl",
+        "marketplace": "Marketplace"
       },
       "fields": {
         "zip": "Zip-Datei",
@@ -1132,12 +1133,14 @@
       "placeholders": {
         "githubUrl": "https://github.com/owner/repo",
         "name": "z.B. my-skill",
-        "command": "npx skills add https://github.com/owner/repo --skill my-skill"
+        "command": "npx skills add https://github.com/owner/repo --skill my-skill",
+        "marketplaceSearch": "Search SkillsMP skills, for example git automation"
       },
       "hints": {
         "github": "Standardmäßig main/master (nur öffentliche github.com-Repos)",
         "nameRequired": "SKILL.md befindet sich im Archiv-Stammverzeichnis; ein Name ist erforderlich",
-        "command": "Fuge einen add-Befehl ein, wir erkennen GitHub-URL und --skill automatisch."
+        "command": "Fuge einen add-Befehl ein, wir erkennen GitHub-URL und --skill automatisch.",
+        "marketplace": "Discover SkillsMP skills through recommendations or search, then continue with Poco's existing import flow."
       },
       "actions": {
         "back": "Zurück",
@@ -1182,12 +1185,39 @@
         "commitError": "Import fehlgeschlagen, bitte später erneut versuchen",
         "partialFailed": "Einige Skills konnten nicht importiert werden. Bitte Details überprüfen.",
         "commitTimeout": "Import zeitüberschritten, bitte später erneut versuchen",
-        "invalidCommand": "Befehl konnte nicht gelesen werden. Bitte eine github.com-URL angeben."
+        "invalidCommand": "Befehl konnte nicht gelesen werden. Bitte eine github.com-URL angeben.",
+        "marketplaceLoadError": "Failed to load SkillsMP data. Please try again later.",
+        "marketplaceDiscoverError": "Failed to resolve this SkillsMP skill. Please try again later."
       },
       "progress": {
         "title": "Import-Fortschritt",
         "value": "Fortschritt",
         "jobId": "Job-ID"
+      },
+      "marketplace": {
+        "search": "Search",
+        "reset": "Back to picks",
+        "searchResults": "{{count}} results",
+        "recommendationHint": "Curated SkillsMP picks that you can preview before importing.",
+        "emptySearch": "No SkillsMP skills matched your search.",
+        "emptyRecommendations": "No SkillsMP recommendations are available right now.",
+        "preview": "Preview",
+        "previewBadge": "SkillsMP Preview",
+        "download": "Download",
+        "downloading": "Working...",
+        "jump": "Open",
+        "openGithub": "GitHub",
+        "byAuthor": "by {{author}}",
+        "noDescription": "No description is available yet.",
+        "repo": "Repository",
+        "branch": "Branch",
+        "path": "Path",
+        "updatedAt": "Updated",
+        "stars": "Stars",
+        "forks": "Forks",
+        "sections": {
+          "popular": "Popular"
+        }
       }
     },
     "pluginsPage": {
@@ -1251,7 +1281,9 @@
       "system": "System",
       "manual": "Manuell",
       "unknown": "Unbekannt",
-      "skillCreator": "Skill Creator"
+      "skillCreator": "Skill Creator",
+      "marketplace": "Marketplace",
+      "skillsmp": "SkillsMP"
     },
     "pluginsManager": {
       "toasts": {
@@ -1290,7 +1322,9 @@
         "github": "GitHub",
         "zip": "ZIP-Paket",
         "manual": "Manuell",
-        "unknown": "Unbekannte Quelle"
+        "unknown": "Unbekannte Quelle",
+        "marketplace": "Marketplace",
+        "skillsmp": "SkillsMP"
       }
     }
   },

@@ -1132,7 +1132,8 @@
       "tabs": {
         "zip": "上传压缩包",
         "github": "GitHub 地址",
-        "command": "npx 命令导入"
+        "command": "npx 命令导入",
+        "marketplace": "技能市场"
       },
       "fields": {
         "zip": "Zip 文件",
@@ -1142,12 +1143,14 @@
       "placeholders": {
         "githubUrl": "https://github.com/owner/repo",
         "name": "例如：my-skill",
-        "command": "npx skills add https://github.com/owner/repo --skill my-skill"
+        "command": "npx skills add https://github.com/owner/repo --skill my-skill",
+        "marketplaceSearch": "搜索 SkillsMP 中的技能，例如 git automation"
       },
       "hints": {
         "github": "默认尝试 main/master 分支（仅支持 github.com 公共仓库）",
         "nameRequired": "检测到 SKILL.md 位于根目录，必须手动填写技能名称",
-        "command": "粘贴 add 命令后将自动解析 GitHub 地址和 --skill 参数。"
+        "command": "粘贴 add 命令后将自动解析 GitHub 地址和 --skill 参数。",
+        "marketplace": "通过推荐或搜索发现 SkillsMP 技能，并继续沿用 Poco 的导入安装流程。"
       },
       "actions": {
         "back": "返回",
@@ -1192,12 +1195,39 @@
         "commitError": "导入失败，请稍后重试",
         "partialFailed": "部分技能导入失败，请查看详情",
         "commitTimeout": "导入超时，请稍后重试",
-        "invalidCommand": "无法解析命令，请确保包含 github.com 地址。"
+        "invalidCommand": "无法解析命令，请确保包含 github.com 地址。",
+        "marketplaceLoadError": "加载 SkillsMP 数据失败，请稍后重试",
+        "marketplaceDiscoverError": "无法解析该 SkillsMP 技能，请稍后重试"
       },
       "progress": {
         "title": "导入进度",
         "value": "进度",
         "jobId": "任务 ID"
+      },
+      "marketplace": {
+        "search": "搜索",
+        "reset": "返回推荐",
+        "searchResults": "共 {{count}} 个结果",
+        "recommendationHint": "精选自 SkillsMP 的热门技能，可快速预览后导入。",
+        "emptySearch": "没有找到匹配的 SkillsMP 技能。",
+        "emptyRecommendations": "当前暂无可展示的 SkillsMP 推荐。",
+        "preview": "预览",
+        "previewBadge": "SkillsMP 预览",
+        "download": "下载",
+        "downloading": "处理中...",
+        "jump": "跳转",
+        "openGithub": "查看 GitHub",
+        "byAuthor": "作者 {{author}}",
+        "noDescription": "暂时没有可展示的描述。",
+        "repo": "仓库",
+        "branch": "分支",
+        "path": "路径",
+        "updatedAt": "更新时间",
+        "stars": "Stars",
+        "forks": "Forks",
+        "sections": {
+          "popular": "热门推荐"
+        }
       }
     },
     "pluginsManager": {
@@ -1355,7 +1385,9 @@
       "system": "系统",
       "manual": "手动",
       "unknown": "未知",
-      "skillCreator": "Skill Creator"
+      "skillCreator": "Skill Creator",
+      "marketplace": "技能市场",
+      "skillsmp": "SkillsMP"
     },
     "presets": {
       "title": "预设",
@@ -1389,7 +1421,9 @@
         "github": "GitHub",
         "zip": "ZIP 包",
         "manual": "手动创建",
-        "unknown": "未知来源"
+        "unknown": "未知来源",
+        "marketplace": "技能市场",
+        "skillsmp": "SkillsMP"
       }
     }
   },

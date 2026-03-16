@@ -97,6 +97,13 @@ function getSourceLabel(skill: Skill, t: (key: string) => string): string {
   if (kind === "manual") {
     return t("library.skillSettings.source.manual");
   }
+  if (kind === "marketplace") {
+    const market = skill.source?.market?.trim();
+    if (market === "skillsmp") {
+      return t("library.skillSettings.source.skillsmp");
+    }
+    return t("library.skillSettings.source.marketplace");
+  }
 
   return t("library.skillSettings.source.unknown");
 }
