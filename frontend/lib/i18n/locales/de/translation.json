@@ -1218,7 +1218,8 @@
         "sections": {
           "popular": "Beliebt"
         },
-        "aiSearchTooltip": "AI Search verwenden und den semantischen Such-Endpunkt von SkillsMP nutzen"
+        "aiSearchTooltip": "AI Search verwenden und den semantischen Such-Endpunkt von SkillsMP nutzen",
+        "refresh": "Empfehlungen aktualisieren"
       }
     },
     "pluginsPage": {

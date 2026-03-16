@@ -1214,7 +1214,8 @@
         "sections": {
           "popular": "Populaire"
         },
-        "aiSearchTooltip": "Utiliser AI Search avec le point d’accès de recherche sémantique de SkillsMP"
+        "aiSearchTooltip": "Utiliser AI Search avec le point d’accès de recherche sémantique de SkillsMP",
+        "refresh": "Actualiser les recommandations"
       }
     },
     "pluginsPage": {

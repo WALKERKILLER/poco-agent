@@ -1214,7 +1214,8 @@
         "sections": {
           "popular": "人気"
         },
-        "aiSearchTooltip": "AI Search を有効にして、SkillsMP のセマンティック検索 API を使います"
+        "aiSearchTooltip": "AI Search を有効にして、SkillsMP のセマンティック検索 API を使います",
+        "refresh": "おすすめを更新"
       }
     },
     "pluginsPage": {

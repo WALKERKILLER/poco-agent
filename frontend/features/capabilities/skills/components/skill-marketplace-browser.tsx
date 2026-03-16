@@ -5,6 +5,7 @@ import {
   ArrowUpRight,
   Download,
   Github,
+  RefreshCw,
   Search,
   Sparkles,
   Star,
@@ -13,11 +14,6 @@ import {
 import { HeaderSearchInput } from "@/components/shared/header-search-input";
 import { Button } from "@/components/ui/button";
 import { StaggeredList } from "@/components/ui/staggered-entrance";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import type {
   SkillsMpRecommendationSection,
   SkillsMpSkillItem,
@@ -31,6 +27,7 @@ interface SkillMarketplaceBrowserProps {
   onSemanticSearchChange: (value: boolean) => void;
   onSearch: () => void;
   onReset: () => void;
+  onRefreshRecommendations: () => void;
   isLoading: boolean;
   errorMessage: string | null;
   sections: SkillsMpRecommendationSection[];
@@ -46,7 +43,9 @@ function formatUpdatedAt(value: string | null, locale: string): string | null {
   const trimmed = value.trim();
   const numericValue = Number(trimmed);
   const date = Number.isFinite(numericValue)
-    ? new Date(numericValue > 1_000_000_000_000 ? numericValue : numericValue * 1000)
+    ? new Date(
+        numericValue > 1_000_000_000_000 ? numericValue : numericValue * 1000,
+      )
     : new Date(trimmed);
   if (Number.isNaN(date.getTime())) return null;
 
@@ -114,7 +113,8 @@ function SkillMarketplaceCard({
         </div>
 
         <p className="line-clamp-3 min-h-[4.5rem] text-sm leading-6 text-muted-foreground">
-          {item.description || t("library.skillsImport.marketplace.noDescription")}
+          {item.description ||
+            t("library.skillsImport.marketplace.noDescription")}
         </p>
 
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-muted-foreground">
@@ -170,6 +170,7 @@ export function SkillMarketplaceBrowser({
   onSemanticSearchChange,
   onSearch,
   onReset,
+  onRefreshRecommendations,
   isLoading,
   errorMessage,
   sections,
@@ -189,7 +190,9 @@ export function SkillMarketplaceBrowser({
           <HeaderSearchInput
             value={searchQuery}
             onChange={onSearchQueryChange}
-            placeholder={t("library.skillsImport.placeholders.marketplaceSearch")}
+            placeholder={t(
+              "library.skillsImport.placeholders.marketplaceSearch",
+            )}
             className="w-full md:w-full"
             onKeyDown={(event) => {
               if (event.key === "Enter") {
@@ -199,34 +202,45 @@ export function SkillMarketplaceBrowser({
             }}
           />
           <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant={isSemanticSearch ? "default" : "outline"}
-                  size="icon"
-                  disabled={isLoading}
-                  onClick={() => onSemanticSearchChange(!isSemanticSearch)}
-                  aria-label={t(
-                    "library.skillsImport.marketplace.aiSearchTooltip",
-                  )}
-                >
-                  <Sparkles className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent sideOffset={6}>
-                {t("library.skillsImport.marketplace.aiSearchTooltip")}
-              </TooltipContent>
-            </Tooltip>
-            <Button onClick={onSearch} disabled={isLoading} className="shrink-0">
-              <Search className="size-4" />
-              {t("library.skillsImport.marketplace.search")}
-            </Button>
+            {!hasActiveSearch ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                disabled={isLoading}
+                onClick={onRefreshRecommendations}
+                aria-label={t("library.skillsImport.marketplace.refresh")}
+                title={t("library.skillsImport.marketplace.refresh")}
+              >
+                <RefreshCw
+                  className={`size-4${isLoading ? " animate-spin" : ""}`}
+                />
+              </Button>
+            ) : null}
             {hasActiveSearch ? (
               <Button variant="outline" onClick={onReset} disabled={isLoading}>
                 {t("library.skillsImport.marketplace.reset")}
               </Button>
             ) : null}
+            <Button
+              type="button"
+              variant={isSemanticSearch ? "default" : "outline"}
+              size="icon"
+              disabled={isLoading}
+              onClick={() => onSemanticSearchChange(!isSemanticSearch)}
+              aria-label={t("library.skillsImport.marketplace.aiSearchTooltip")}
+              title={t("library.skillsImport.marketplace.aiSearchTooltip")}
+            >
+              <Sparkles className="size-4" />
+            </Button>
+            <Button
+              onClick={onSearch}
+              disabled={isLoading}
+              className="shrink-0"
+            >
+              <Search className="size-4" />
+              {t("library.skillsImport.marketplace.search")}
+            </Button>
           </div>
         </div>
         <p className="text-xs leading-5 text-muted-foreground">
@@ -289,7 +303,9 @@ export function SkillMarketplaceBrowser({
                 <div className="space-y-1">
                   <h3 className="text-base font-semibold tracking-tight">
                     {section.title ||
-                      t(`library.skillsImport.marketplace.sections.${section.key}`)}
+                      t(
+                        `library.skillsImport.marketplace.sections.${section.key}`,
+                      )}
                   </h3>
                   <p className="text-sm text-muted-foreground">
                     {t("library.skillsImport.marketplace.recommendationHint")}

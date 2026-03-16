@@ -1214,7 +1214,8 @@
         "sections": {
           "popular": "Популярное"
         },
-        "aiSearchTooltip": "Включить AI Search и использовать семантический поиск SkillsMP"
+        "aiSearchTooltip": "Включить AI Search и использовать семантический поиск SkillsMP",
+        "refresh": "Обновить рекомендации"
       }
     },
     "pluginsPage": {

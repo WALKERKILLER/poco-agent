@@ -14,6 +14,11 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CapabilityDialogContent } from "@/features/capabilities/components/capability-dialog-content";
 import { skillsService } from "@/features/capabilities/skills/api/skills-api";
+import {
+  clearCachedSkillsMarketplaceRecommendations,
+  readCachedSkillsMarketplaceRecommendations,
+  writeCachedSkillsMarketplaceRecommendations,
+} from "@/features/capabilities/skills/api/skills-marketplace-cache";
 import { SkillMarketplaceBrowser } from "@/features/capabilities/skills/components/skill-marketplace-browser";
 import { markSlashCommandSuggestionsInvalidated } from "@/features/capabilities/slash-commands/api/suggestions-state";
 import type {
@@ -293,31 +298,51 @@ export function SkillImportDialog({
     [],
   );
 
-  const loadMarketplaceRecommendations = React.useCallback(async () => {
-    setIsMarketplaceLoading(true);
-    setMarketplaceError(null);
-    try {
-      const response = await skillsService.listMarketplaceRecommendations({
-        limit: 8,
-      });
-      if (!isActiveRef.current) return;
-      setMarketplaceRecommendations(response.sections || []);
-      setMarketplaceSearchItems([]);
-      setMarketplaceHasActiveSearch(false);
-    } catch (error) {
-      console.error("[SkillsImport] marketplace recommendations failed:", error);
-      if (!isActiveRef.current) return;
-      setMarketplaceError(
-        error instanceof ApiError
-          ? error.message
-          : t("library.skillsImport.toasts.marketplaceLoadError"),
-      );
-    } finally {
-      if (isActiveRef.current) {
-        setIsMarketplaceLoading(false);
+  const loadMarketplaceRecommendations = React.useCallback(
+    async (options?: { forceRefresh?: boolean }) => {
+      const forceRefresh = options?.forceRefresh ?? false;
+
+      if (!forceRefresh) {
+        const cachedSections = readCachedSkillsMarketplaceRecommendations();
+        if (cachedSections) {
+          setMarketplaceRecommendations(cachedSections);
+          setMarketplaceSearchItems([]);
+          setMarketplaceHasActiveSearch(false);
+          setMarketplaceError(null);
+          return;
+        }
+      } else {
+        clearCachedSkillsMarketplaceRecommendations();
       }
-    }
-  }, [t]);
+
+      setIsMarketplaceLoading(true);
+      setMarketplaceError(null);
+      try {
+        const response = await skillsService.listMarketplaceRecommendations({
+          limit: 8,
+        });
+        if (!isActiveRef.current) return;
+        const sections = response.sections || [];
+        writeCachedSkillsMarketplaceRecommendations(sections);
+        setMarketplaceRecommendations(sections);
+        setMarketplaceSearchItems([]);
+        setMarketplaceHasActiveSearch(false);
+      } catch (error) {
+        console.error("[SkillsImport] marketplace recommendations failed:", error);
+        if (!isActiveRef.current) return;
+        setMarketplaceError(
+          error instanceof ApiError
+            ? error.message
+            : t("library.skillsImport.toasts.marketplaceLoadError"),
+        );
+      } finally {
+        if (isActiveRef.current) {
+          setIsMarketplaceLoading(false);
+        }
+      }
+    },
+    [t],
+  );
 
   const searchMarketplace = React.useCallback(async () => {
     const query = marketplaceQuery.trim();
@@ -360,6 +385,13 @@ export function SkillImportDialog({
     setMarketplaceSearchItems([]);
     setMarketplaceHasActiveSearch(false);
     await loadMarketplaceRecommendations();
+  }, [loadMarketplaceRecommendations]);
+
+  const refreshMarketplaceRecommendations = React.useCallback(async () => {
+    setMarketplaceQuery("");
+    setMarketplaceSearchItems([]);
+    setMarketplaceHasActiveSearch(false);
+    await loadMarketplaceRecommendations({ forceRefresh: true });
   }, [loadMarketplaceRecommendations]);
 
   React.useEffect(() => {
@@ -648,6 +680,9 @@ export function SkillImportDialog({
                     }}
                     onReset={() => {
                       void resetMarketplaceSearch();
+                    }}
+                    onRefreshRecommendations={() => {
+                      void refreshMarketplaceRecommendations();
                     }}
                     isLoading={isMarketplaceLoading}
                     errorMessage={marketplaceError}
