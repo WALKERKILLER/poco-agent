@@ -7,6 +7,7 @@ from app.schemas.response import Response, ResponseSchema
 from app.schemas.skill_import import SkillImportDiscoverResponse
 from app.schemas.skill_marketplace import (
     SkillsMpImportDiscoverRequest,
+    SkillsMpMarketplaceStatusResponse,
     SkillsMpRecommendationsResponse,
     SkillsMpSearchResponse,
 )
@@ -20,6 +21,18 @@ import_service = SkillImportService()
 
 
 @router.get(
+    "/status",
+    response_model=ResponseSchema[SkillsMpMarketplaceStatusResponse],
+)
+async def get_skills_marketplace_status(
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+) -> JSONResponse:
+    result = skillsmp_service.get_marketplace_status(db, user_id=user_id)
+    return Response.success(data=result, message="SkillsMP marketplace status loaded")
+
+
+@router.get(
     "/search",
     response_model=ResponseSchema[SkillsMpSearchResponse],
 )
@@ -29,9 +42,11 @@ async def search_skills_marketplace(
     page_size: int = Query(default=12, ge=1, le=50),
     semantic: bool = Query(default=False),
     user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
 ) -> JSONResponse:
-    _ = user_id
     result = await skillsmp_service.search(
+        db=db,
+        user_id=user_id,
         query=q,
         page=page,
         page_size=page_size,
@@ -47,9 +62,13 @@ async def search_skills_marketplace(
 async def list_skills_marketplace_recommendations(
     limit: int = Query(default=9, ge=1, le=24),
     user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
 ) -> JSONResponse:
-    _ = user_id
-    result = await skillsmp_service.list_recommendations(limit=limit)
+    result = await skillsmp_service.list_recommendations(
+        db=db,
+        user_id=user_id,
+        limit=limit,
+    )
     return Response.success(
         data=result,
         message="SkillsMP recommendations completed successfully",

@@ -1208,7 +1208,11 @@
         "openInGithub": "GitHub で開く",
         "checkInSkillsmp": "SkillsMP で確認",
         "titleLabel": "タイトル",
-        "descriptionLabel": "説明"
+        "descriptionLabel": "説明",
+        "setupTitle": "SkillsMP を接続して、さらに多くの skills を見つける",
+        "setupDescription": "SkillsMP は、人気順や検索で再利用可能な agent skills を見つけられる skill marketplace です。",
+        "setupHint": "まず 設定 > その他 で SkillsMP API キーを追加してから、ここに戻って marketplace を利用してください。",
+        "openSettings": "設定を開く"
       }
     },
     "pluginsPage": {
@@ -1381,6 +1385,7 @@
       "account": "アカウント",
       "settings": "設定",
       "models": "モデル",
+      "other": "その他",
       "usage": "使用状況",
       "shortcuts": "Shortcuts"
     },
@@ -1519,7 +1524,27 @@
     "providerModelsManualHint": "このプロバイダーは自動検出に対応していません。モデル名を手動で入力してください。",
     "providerModelsEmpty": "モデルが見つかりません",
     "providerModelsUseCustom": "カスタムモデルを使用: {{model}}",
-    "providerFieldAnnotation": "API Key を空欄のままにすると現在のキーを保持します。Base URL を空欄のままにするとデフォルトのエンドポイントを使用します。モデル名は手動で入力し、Enter または追加ボタンで登録してください。"
+    "providerFieldAnnotation": "API Key を空欄のままにすると現在のキーを保持します。Base URL を空欄のままにするとデフォルトのエンドポイントを使用します。モデル名は手動で入力し、Enter または追加ボタンで登録してください。",
+    "other": {
+      "title": "その他の連携",
+      "description": "モデルプロバイダー以外の追加サービス認証情報を管理します。",
+      "skillsmp": {
+        "title": "SkillsMP",
+        "subtitle": "外部 skills 向けの marketplace 検索とおすすめを有効にします。",
+        "description": "SkillsMP API キー",
+        "statusChecking": "確認中...",
+        "statusReady": "準備完了",
+        "statusMissing": "未設定",
+        "keyLabel": "SkillsMP API キー",
+        "keyPlaceholder": "SkillsMP API キーを入力",
+        "help": "このキーを設定すると、skill import ダイアログで SkillsMP の検索とおすすめを利用できます。",
+        "docsLink": "SkillsMP API ドキュメント",
+        "customKeySaved": "このアカウントには既にユーザー専用のカスタムキーが保存されています。",
+        "save": "キーを保存",
+        "clear": "カスタムキーを削除",
+        "clearError": "SkillsMP 状態の更新に失敗しました"
+      }
+    }
   },
   "validation": {
     "projectNameRequired": "プロジェクト名を入力してください",

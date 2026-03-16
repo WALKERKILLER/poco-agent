@@ -1,0 +1,205 @@
+"use client";
+
+import * as React from "react";
+import {
+  ExternalLink,
+  KeyRound,
+  Loader2,
+  RotateCcw,
+  Save,
+  Sparkles,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useEnvVarsStore } from "@/features/capabilities/env-vars/hooks/use-env-vars-store";
+import { skillsService } from "@/features/capabilities/skills/api/skills-api";
+import { useT } from "@/lib/i18n/client";
+
+const SKILLSMP_API_KEY = "SKILLSMP_API_KEY";
+const SKILLSMP_DOCS_URL = "https://skillsmp.com/docs/api";
+
+export function OtherSettingsTab() {
+  const { t } = useT("translation");
+  const { envVars, isLoading, savingEnvKey, upsertEnvVar, removeEnvVar } =
+    useEnvVarsStore();
+
+  const [keyInput, setKeyInput] = React.useState("");
+  const [isStatusLoading, setIsStatusLoading] = React.useState(true);
+  const [isMarketplaceConfigured, setIsMarketplaceConfigured] =
+    React.useState(false);
+
+  const customSkillsMpKey = React.useMemo(
+    () =>
+      envVars.find(
+        (item) => item.scope === "user" && item.key === SKILLSMP_API_KEY,
+      ) ?? null,
+    [envVars],
+  );
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const loadStatus = async () => {
+      setIsStatusLoading(true);
+      try {
+        const response = await skillsService.getMarketplaceStatus();
+        if (!cancelled) {
+          setIsMarketplaceConfigured(response.configured);
+        }
+      } catch (error) {
+        console.error("[Settings] Failed to load SkillsMP status:", error);
+        if (!cancelled) {
+          setIsMarketplaceConfigured(false);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsStatusLoading(false);
+        }
+      }
+    };
+
+    void loadStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const isSaving = savingEnvKey === SKILLSMP_API_KEY;
+  const canSave = keyInput.trim().length > 0 && !isSaving;
+  const canClear = Boolean(customSkillsMpKey) && !isSaving;
+
+  const handleSave = React.useCallback(async () => {
+    const trimmed = keyInput.trim();
+    if (!trimmed) return;
+
+    await upsertEnvVar({
+      key: SKILLSMP_API_KEY,
+      value: trimmed,
+      description: t("settings.other.skillsmp.description"),
+    });
+    setKeyInput("");
+
+    try {
+      const response = await skillsService.getMarketplaceStatus();
+      setIsMarketplaceConfigured(response.configured);
+    } catch (error) {
+      console.error("[Settings] Failed to refresh SkillsMP status:", error);
+    }
+  }, [keyInput, t, upsertEnvVar]);
+
+  const handleClear = React.useCallback(async () => {
+    if (!customSkillsMpKey) return;
+
+    await removeEnvVar(customSkillsMpKey.id);
+    try {
+      const response = await skillsService.getMarketplaceStatus();
+      setIsMarketplaceConfigured(response.configured);
+    } catch (error) {
+      console.error("[Settings] Failed to refresh SkillsMP status:", error);
+      toast.error(t("settings.other.skillsmp.clearError"));
+    }
+  }, [customSkillsMpKey, removeEnvVar, t]);
+
+  return (
+    <div className="flex-1 space-y-8 overflow-y-auto p-6">
+      <section className="space-y-2">
+        <h3 className="text-sm font-medium text-foreground">
+          {t("settings.other.title")}
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          {t("settings.other.description")}
+        </p>
+      </section>
+
+      <section className="space-y-4 rounded-3xl border border-border/60 bg-card/60 p-5 shadow-[var(--shadow-sm)]">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="flex size-9 items-center justify-center rounded-2xl bg-muted text-foreground">
+                <Sparkles className="size-4" />
+              </div>
+              <div>
+                <h4 className="text-base font-medium text-foreground">
+                  {t("settings.other.skillsmp.title")}
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {t("settings.other.skillsmp.subtitle")}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
+            {isLoading || isStatusLoading
+              ? t("settings.other.skillsmp.statusChecking")
+              : isMarketplaceConfigured
+                ? t("settings.other.skillsmp.statusReady")
+                : t("settings.other.skillsmp.statusMissing")}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label
+            htmlFor="skillsmp-api-key"
+            className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"
+          >
+            <KeyRound className="size-3.5" />
+            {t("settings.other.skillsmp.keyLabel")}
+          </label>
+          <Input
+            id="skillsmp-api-key"
+            type="password"
+            value={keyInput}
+            onChange={(event) => setKeyInput(event.target.value)}
+            placeholder={t("settings.other.skillsmp.keyPlaceholder")}
+            disabled={isSaving}
+          />
+          <p className="text-xs leading-6 text-muted-foreground">
+            {t("settings.other.skillsmp.help")}{" "}
+            <a
+              href={SKILLSMP_DOCS_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-foreground underline underline-offset-4"
+            >
+              {t("settings.other.skillsmp.docsLink")}
+              <ExternalLink className="size-3" />
+            </a>
+          </p>
+          {customSkillsMpKey ? (
+            <p className="text-xs text-muted-foreground">
+              {t("settings.other.skillsmp.customKeySaved")}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {canClear ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void handleClear()}
+              disabled={isSaving}
+            >
+              <RotateCcw className="size-4" />
+              {t("settings.other.skillsmp.clear")}
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={!canSave}
+          >
+            {isSaving ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Save className="size-4" />
+            )}
+            {t("settings.other.skillsmp.save")}
+          </Button>
+        </div>
+      </section>
+    </div>
+  );
+}

@@ -7,11 +7,23 @@ import {
   ArrowUpRight,
   CheckCheck,
   Github,
+  Loader2,
   ListChecks,
+  Settings2,
+  Sparkles,
   Type,
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { useAppShell } from "@/components/shell/app-shell-context";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -183,6 +195,7 @@ export function SkillImportDialog({
   onImported,
 }: SkillImportDialogProps) {
   const { t } = useT("translation");
+  const { openSettings } = useAppShell();
   const [tab, setTab] = useState<SourceTab>("marketplace");
   const [zipFile, setZipFile] = useState<File | null>(null);
   const [githubUrl, setGithubUrl] = useState("");
@@ -202,6 +215,9 @@ export function SkillImportDialog({
   const [marketplaceDownloadingId, setMarketplaceDownloadingId] = useState<
     string | null
   >(null);
+  const [isMarketplaceConfigured, setIsMarketplaceConfigured] = useState(false);
+  const [isMarketplaceStatusLoading, setIsMarketplaceStatusLoading] =
+    useState(false);
   const [resolvedMarketplaceItem, setResolvedMarketplaceItem] =
     useState<SkillsMpSkillItem | null>(null);
 
@@ -377,6 +393,37 @@ export function SkillImportDialog({
     [t],
   );
 
+  React.useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    let cancelled = false;
+    const loadMarketplaceStatus = async () => {
+      setIsMarketplaceStatusLoading(true);
+      try {
+        const response = await skillsService.getMarketplaceStatus();
+        if (!cancelled) {
+          setIsMarketplaceConfigured(response.configured);
+        }
+      } catch (error) {
+        console.error("[SkillsImport] marketplace status failed:", error);
+        if (!cancelled) {
+          setIsMarketplaceConfigured(false);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsMarketplaceStatusLoading(false);
+        }
+      }
+    };
+
+    void loadMarketplaceStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
   const onDiscover = async () => {
     setIsDiscovering(true);
     setCommitResult(null);
@@ -512,7 +559,12 @@ export function SkillImportDialog({
   }, [loadMarketplaceRecommendations]);
 
   React.useEffect(() => {
-    if (!open || tab !== "marketplace" || archiveKey) {
+    if (
+      !open ||
+      tab !== "marketplace" ||
+      archiveKey ||
+      !isMarketplaceConfigured
+    ) {
       return;
     }
     if (
@@ -528,6 +580,7 @@ export function SkillImportDialog({
     isMarketplaceLoading,
     loadMarketplaceRecommendations,
     marketplaceHasActiveSearch,
+    isMarketplaceConfigured,
     marketplaceRecommendations.length,
     open,
     tab,
@@ -634,6 +687,13 @@ export function SkillImportDialog({
         nameOverride: "",
       })
     : null;
+
+  const openMarketplaceSettings = React.useCallback(() => {
+    handleClose();
+    window.setTimeout(() => {
+      openSettings("other");
+    }, 180);
+  }, [handleClose, openSettings]);
 
   return (
     <>
@@ -750,30 +810,63 @@ export function SkillImportDialog({
                 </TabsList>
 
                 <TabsContent value="marketplace" className="space-y-3">
-                  <SkillMarketplaceBrowser
-                    searchQuery={marketplaceQuery}
-                    onSearchQueryChange={setMarketplaceQuery}
-                    isSemanticSearch={isSemanticSearch}
-                    onSemanticSearchChange={setIsSemanticSearch}
-                    onSearch={() => {
-                      void searchMarketplace();
-                    }}
-                    onReset={() => {
-                      void resetMarketplaceSearch();
-                    }}
-                    onRefreshRecommendations={() => {
-                      void refreshMarketplaceRecommendations();
-                    }}
-                    isLoading={isMarketplaceLoading}
-                    errorMessage={marketplaceError}
-                    sections={marketplaceRecommendations}
-                    items={marketplaceSearchItems}
-                    hasActiveSearch={marketplaceHasActiveSearch}
-                    onDownload={(item) => {
-                      void onMarketplaceDownload(item);
-                    }}
-                    downloadingExternalId={marketplaceDownloadingId}
-                  />
+                  {isMarketplaceStatusLoading ? (
+                    <div className="flex min-h-[24rem] items-center justify-center rounded-[1.5rem] border border-border/60 bg-muted/20">
+                      <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : !isMarketplaceConfigured ? (
+                    <Empty className="min-h-[24rem] rounded-[1.5rem] border border-border/60 bg-gradient-to-br from-muted/25 via-background to-background px-6 py-10">
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon" className="size-14 rounded-2xl">
+                          <Sparkles className="size-7" />
+                        </EmptyMedia>
+                        <EmptyTitle>
+                          {t("library.skillsImport.marketplace.setupTitle")}
+                        </EmptyTitle>
+                        <EmptyDescription>
+                          {t("library.skillsImport.marketplace.setupDescription")}
+                        </EmptyDescription>
+                      </EmptyHeader>
+                      <EmptyContent className="max-w-md">
+                        <p className="text-sm leading-6 text-muted-foreground">
+                          {t("library.skillsImport.marketplace.setupHint")}
+                        </p>
+                        <Button
+                          type="button"
+                          onClick={openMarketplaceSettings}
+                          className="min-w-44"
+                        >
+                          <Settings2 className="size-4" />
+                          {t("library.skillsImport.marketplace.openSettings")}
+                        </Button>
+                      </EmptyContent>
+                    </Empty>
+                  ) : (
+                    <SkillMarketplaceBrowser
+                      searchQuery={marketplaceQuery}
+                      onSearchQueryChange={setMarketplaceQuery}
+                      isSemanticSearch={isSemanticSearch}
+                      onSemanticSearchChange={setIsSemanticSearch}
+                      onSearch={() => {
+                        void searchMarketplace();
+                      }}
+                      onReset={() => {
+                        void resetMarketplaceSearch();
+                      }}
+                      onRefreshRecommendations={() => {
+                        void refreshMarketplaceRecommendations();
+                      }}
+                      isLoading={isMarketplaceLoading}
+                      errorMessage={marketplaceError}
+                      sections={marketplaceRecommendations}
+                      items={marketplaceSearchItems}
+                      hasActiveSearch={marketplaceHasActiveSearch}
+                      onDownload={(item) => {
+                        void onMarketplaceDownload(item);
+                      }}
+                      downloadingExternalId={marketplaceDownloadingId}
+                    />
+                  )}
                 </TabsContent>
 
                 <TabsContent value="zip" className="space-y-3">

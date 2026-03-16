@@ -1212,7 +1212,11 @@
         "openInGithub": "In GitHub öffnen",
         "checkInSkillsmp": "In SkillsMP ansehen",
         "titleLabel": "Titel",
-        "descriptionLabel": "Beschreibung"
+        "descriptionLabel": "Beschreibung",
+        "setupTitle": "SkillsMP verbinden und mehr Skills entdecken",
+        "setupDescription": "SkillsMP ist ein Skill-Marketplace, in dem du wiederverwendbare Agent-Skills per Suche oder Popularitaet entdecken kannst.",
+        "setupHint": "Fuege zuerst deinen SkillsMP API-Schluessel unter Einstellungen > Sonstiges hinzu und kehre dann hierher zurueck.",
+        "openSettings": "Einstellungen oeffnen"
       }
     },
     "pluginsPage": {
@@ -1385,6 +1389,7 @@
       "account": "Konto",
       "settings": "Einstellungen",
       "models": "Modelle",
+      "other": "Sonstiges",
       "usage": "Nutzung",
       "shortcuts": "Shortcuts"
     },
@@ -1523,7 +1528,27 @@
     "providerModelsManualHint": "Dieser Anbieter unterstützt keine automatische Erkennung. Gib die Modellnamen manuell ein.",
     "providerModelsEmpty": "Keine Modelle gefunden",
     "providerModelsUseCustom": "Benutzerdefiniertes Modell verwenden: {{model}}",
-    "providerFieldAnnotation": "API Key leer lassen, um den aktuellen Schluessel beizubehalten. Base URL leer lassen, um den Standard-Endpunkt zu verwenden. Modellnamen manuell eingeben und mit Enter oder dem Plus hinzufuegen."
+    "providerFieldAnnotation": "API Key leer lassen, um den aktuellen Schluessel beizubehalten. Base URL leer lassen, um den Standard-Endpunkt zu verwenden. Modellnamen manuell eingeben und mit Enter oder dem Plus hinzufuegen.",
+    "other": {
+      "title": "Weitere Integrationen",
+      "description": "Verwalte zusaetzliche Dienst-Zugangsdaten ausserhalb der Modellanbieter.",
+      "skillsmp": {
+        "title": "SkillsMP",
+        "subtitle": "Aktiviert Marketplace-Suche und Empfehlungen fuer externe Skills.",
+        "description": "SkillsMP API-Schluessel",
+        "statusChecking": "Wird geprueft...",
+        "statusReady": "Bereit",
+        "statusMissing": "Nicht konfiguriert",
+        "keyLabel": "SkillsMP API-Schluessel",
+        "keyPlaceholder": "Gib deinen SkillsMP API-Schluessel ein",
+        "help": "Dieser Schluessel aktiviert SkillsMP-Suche und Empfehlungen im Skill-Import-Dialog.",
+        "docsLink": "SkillsMP API-Dokumentation",
+        "customKeySaved": "Fuer dieses Konto ist bereits ein benutzerdefinierter Schluessel gespeichert.",
+        "save": "Schluessel speichern",
+        "clear": "Benutzerdefinierten Schluessel entfernen",
+        "clearError": "SkillsMP-Status konnte nicht aktualisiert werden"
+      }
+    }
   },
   "validation": {
     "projectNameRequired": "Bitte gib einen Projektnamen ein",

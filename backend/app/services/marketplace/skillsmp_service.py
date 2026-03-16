@@ -1,9 +1,10 @@
 from datetime import datetime, timezone
-from typing import Any
 from pathlib import PurePosixPath
+from typing import Any
 from urllib.parse import quote, urlparse
 
 import httpx
+from sqlalchemy.orm import Session
 
 from app.core.errors.error_codes import ErrorCode
 from app.core.errors.exceptions import AppException
@@ -11,10 +12,12 @@ from app.core.settings import get_settings
 from app.schemas.skill_import import SkillImportCandidate
 from app.schemas.skill_marketplace import (
     SkillsMpRecommendationSection,
+    SkillsMpMarketplaceStatusResponse,
     SkillsMpRecommendationsResponse,
     SkillsMpSearchResponse,
     SkillsMpSkillItem,
 )
+from app.services.env_var_service import EnvVarService
 
 _DEFAULT_RECOMMENDATION_QUERY = "agent"
 
@@ -22,6 +25,7 @@ _DEFAULT_RECOMMENDATION_QUERY = "agent"
 class SkillsMpService:
     def __init__(self) -> None:
         self.settings = get_settings()
+        self.env_var_service = EnvVarService()
 
     def _resolve_base_url(self) -> str:
         base_url = self.settings.skillsmp_base_url.strip().rstrip("/")
@@ -32,14 +36,30 @@ class SkillsMpService:
             )
         return base_url
 
-    def _resolve_api_key(self) -> str:
-        api_key = self.settings.skillsmp_api_key.strip()
+    def _resolve_api_key(self, db: Session, user_id: str) -> str:
+        env_map = self.env_var_service.get_env_map(db, user_id=user_id)
+        api_key = (
+            env_map.get("SKILLSMP_API_KEY") or self.settings.skillsmp_api_key or ""
+        ).strip()
         if not api_key:
             raise AppException(
                 error_code=ErrorCode.BAD_REQUEST,
                 message="SKILLSMP_API_KEY is required for SkillsMP marketplace",
             )
         return api_key
+
+    def get_marketplace_status(
+        self, db: Session, user_id: str
+    ) -> SkillsMpMarketplaceStatusResponse:
+        env_map = self.env_var_service.get_env_map(db, user_id=user_id)
+        configured = bool(
+            (
+                env_map.get("SKILLSMP_API_KEY")
+                or self.settings.skillsmp_api_key
+                or ""
+            ).strip()
+        )
+        return SkillsMpMarketplaceStatusResponse(configured=configured)
 
     @staticmethod
     def _clean_text(value: object) -> str | None:
@@ -361,6 +381,8 @@ class SkillsMpService:
     async def _request_skills(
         self,
         *,
+        db: Session,
+        user_id: str,
         page: int,
         page_size: int,
         sort_by: str,
@@ -384,7 +406,7 @@ class SkillsMpService:
         url = f"{self._resolve_base_url()}{endpoint}"
         timeout = httpx.Timeout(self.settings.skillsmp_timeout_seconds, connect=5.0)
         headers = {
-            "Authorization": f"Bearer {self._resolve_api_key()}",
+            "Authorization": f"Bearer {self._resolve_api_key(db, user_id)}",
             "Accept": "application/json",
             "User-Agent": "poco-agent-skillsmp/1.0",
         }
@@ -436,6 +458,8 @@ class SkillsMpService:
     async def search(
         self,
         *,
+        db: Session,
+        user_id: str,
         query: str,
         page: int = 1,
         page_size: int = 12,
@@ -453,6 +477,8 @@ class SkillsMpService:
             )
 
         return await self._request_skills(
+            db=db,
+            user_id=user_id,
             page=page,
             page_size=page_size,
             sort_by="stars",
@@ -463,15 +489,21 @@ class SkillsMpService:
     async def list_recommendations(
         self,
         *,
+        db: Session,
+        user_id: str,
         limit: int = 9,
     ) -> SkillsMpRecommendationsResponse:
         popular = await self._request_skills(
+            db=db,
+            user_id=user_id,
             page=1,
             page_size=limit,
             sort_by="stars",
             query=_DEFAULT_RECOMMENDATION_QUERY,
         )
         recent = await self._request_skills(
+            db=db,
+            user_id=user_id,
             page=1,
             page_size=limit,
             sort_by="recent",

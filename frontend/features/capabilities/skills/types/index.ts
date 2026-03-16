@@ -142,6 +142,10 @@ export interface SkillsMpRecommendationsResponse {
   sections: SkillsMpRecommendationSection[];
 }
 
+export interface SkillsMpMarketplaceStatusResponse {
+  configured: boolean;
+}
+
 export interface SkillsMpImportDiscoverInput {
   item: SkillsMpSkillItem;
 }

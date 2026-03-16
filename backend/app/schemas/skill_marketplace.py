@@ -38,5 +38,9 @@ class SkillsMpRecommendationsResponse(BaseModel):
     sections: list[SkillsMpRecommendationSection] = Field(default_factory=list)
 
 
+class SkillsMpMarketplaceStatusResponse(BaseModel):
+    configured: bool = False
+
+
 class SkillsMpImportDiscoverRequest(BaseModel):
     item: SkillsMpSkillItem

@@ -5,7 +5,12 @@ import type {
   ModelProvider,
 } from "@/features/chat/types/api/models";
 
-export type SettingsTabId = "account" | "models" | "usage" | "shortcuts";
+export type SettingsTabId =
+  | "account"
+  | "models"
+  | "usage"
+  | "shortcuts"
+  | "other";
 
 export type SettingsTabRequest = {
   tab: SettingsTabId;

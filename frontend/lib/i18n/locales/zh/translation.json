@@ -1219,10 +1219,14 @@
         },
         "aiSearchTooltip": "启用 AI Search，使用 SkillsMP 的语义搜索接口",
         "refresh": "刷新推荐",
-        "openInGithub": "Open in GitHub",
-        "checkInSkillsmp": "Check in SkillsMP",
+        "openInGithub": "在 GitHub 中打开",
+        "checkInSkillsmp": "在 SkillsMP 中查看",
         "titleLabel": "标题",
-        "descriptionLabel": "描述"
+        "descriptionLabel": "描述",
+        "setupTitle": "连接 SkillsMP，发现更多技能",
+        "setupDescription": "SkillsMP 是一个技能市场，你可以按热门或搜索方式发现可复用的 agent skill。",
+        "setupHint": "请先前往 设置 > 其他 填写 SkillsMP API Key，然后再回到这里浏览市场结果。",
+        "openSettings": "前往设置"
       }
     },
     "pluginsManager": {
@@ -1485,6 +1489,7 @@
       "account": "账户",
       "settings": "设置",
       "models": "模型",
+      "other": "其他",
       "usage": "使用情况",
       "shortcuts": "快捷键"
     },
@@ -1623,7 +1628,27 @@
     "providerModelsManualHint": "该提供方暂不支持自动发现，请手动输入模型名称。",
     "providerModelsEmpty": "没有找到模型",
     "providerModelsUseCustom": "使用自定义模型：{{model}}",
-    "providerFieldAnnotation": "API Key 留空表示保留当前值，Base URL 留空表示使用默认地址。模型名称请手动输入，按回车或点击添加。"
+    "providerFieldAnnotation": "API Key 留空表示保留当前值，Base URL 留空表示使用默认地址。模型名称请手动输入，按回车或点击添加。",
+    "other": {
+      "title": "其他集成",
+      "description": "管理不属于模型提供方的额外服务凭据。",
+      "skillsmp": {
+        "title": "SkillsMP",
+        "subtitle": "开启技能市场搜索与推荐能力。",
+        "description": "SkillsMP API Key",
+        "statusChecking": "检测中...",
+        "statusReady": "已就绪",
+        "statusMissing": "未配置",
+        "keyLabel": "SkillsMP API Key",
+        "keyPlaceholder": "请输入你的 SkillsMP API Key",
+        "help": "这个 key 用于在技能导入弹窗中启用 SkillsMP 市场搜索和推荐请求。",
+        "docsLink": "SkillsMP API 文档",
+        "customKeySaved": "当前账户已经保存了一个用户级自定义 key。",
+        "save": "保存 Key",
+        "clear": "移除自定义 Key",
+        "clearError": "刷新 SkillsMP 状态失败"
+      }
+    }
   },
   "validation": {
     "projectNameRequired": "请输入项目名称",

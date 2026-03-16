@@ -1208,7 +1208,11 @@
         "openInGithub": "Ouvrir dans GitHub",
         "checkInSkillsmp": "Voir dans SkillsMP",
         "titleLabel": "Titre",
-        "descriptionLabel": "Description"
+        "descriptionLabel": "Description",
+        "setupTitle": "Connectez SkillsMP pour découvrir plus de skills",
+        "setupDescription": "SkillsMP est une marketplace de skills où vous pouvez découvrir des agent skills réutilisables par popularité ou via la recherche.",
+        "setupHint": "Ajoutez d'abord votre clé API SkillsMP dans Paramètres > Autre, puis revenez ici pour parcourir le marketplace.",
+        "openSettings": "Ouvrir les paramètres"
       }
     },
     "pluginsPage": {
@@ -1381,6 +1385,7 @@
       "account": "Compte",
       "settings": "Paramètres",
       "models": "Modèles",
+      "other": "Autre",
       "usage": "Utilisation",
       "shortcuts": "Shortcuts"
     },
@@ -1519,7 +1524,27 @@
     "providerModelsManualHint": "Ce fournisseur ne prend pas en charge la découverte automatique. Saisissez les noms des modèles manuellement.",
     "providerModelsEmpty": "Aucun modèle trouvé",
     "providerModelsUseCustom": "Utiliser un modèle personnalisé : {{model}}",
-    "providerFieldAnnotation": "Laissez le champ API Key vide pour conserver la clé actuelle. Laissez Base URL vide pour utiliser l'endpoint par défaut. Saisissez les noms de modèle manuellement puis appuyez sur Entrée ou cliquez sur ajouter."
+    "providerFieldAnnotation": "Laissez le champ API Key vide pour conserver la clé actuelle. Laissez Base URL vide pour utiliser l'endpoint par défaut. Saisissez les noms de modèle manuellement puis appuyez sur Entrée ou cliquez sur ajouter.",
+    "other": {
+      "title": "Autres intégrations",
+      "description": "Gérez les identifiants de services supplémentaires hors fournisseurs de modèles.",
+      "skillsmp": {
+        "title": "SkillsMP",
+        "subtitle": "Active la recherche et les recommandations du marketplace pour les skills externes.",
+        "description": "Clé API SkillsMP",
+        "statusChecking": "Vérification...",
+        "statusReady": "Prêt",
+        "statusMissing": "Non configuré",
+        "keyLabel": "Clé API SkillsMP",
+        "keyPlaceholder": "Entrez votre clé API SkillsMP",
+        "help": "Cette clé active la recherche et les recommandations SkillsMP dans la fenêtre d'import de skills.",
+        "docsLink": "Documentation API SkillsMP",
+        "customKeySaved": "Une clé personnalisée au niveau utilisateur est déjà enregistrée pour ce compte.",
+        "save": "Enregistrer la clé",
+        "clear": "Supprimer la clé personnalisée",
+        "clearError": "Impossible d'actualiser le statut SkillsMP"
+      }
+    }
   },
   "validation": {
     "projectNameRequired": "Veuillez entrer un nom de projet",

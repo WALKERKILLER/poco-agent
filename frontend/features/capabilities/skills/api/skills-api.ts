@@ -15,6 +15,7 @@ import type {
   SkillImportCommitEnqueueResponse,
   SkillImportJobStatusResponse,
   SkillsMpImportDiscoverInput,
+  SkillsMpMarketplaceStatusResponse,
   SkillsMpRecommendationsResponse,
   SkillsMpSearchResponse,
 } from "@/features/capabilities/skills/types";
@@ -163,6 +164,13 @@ export const skillsService = {
   ): Promise<SkillImportJobStatusResponse> => {
     return apiClient.get<SkillImportJobStatusResponse>(
       API_ENDPOINTS.skillImportJob(jobId),
+      { cache: "no-store" },
+    );
+  },
+
+  getMarketplaceStatus: async (): Promise<SkillsMpMarketplaceStatusResponse> => {
+    return apiClient.get<SkillsMpMarketplaceStatusResponse>(
+      API_ENDPOINTS.skillsMarketplaceStatus,
       { cache: "no-store" },
     );
   },

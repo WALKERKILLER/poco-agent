@@ -1222,7 +1222,11 @@
         "openInGithub": "Open in GitHub",
         "checkInSkillsmp": "Check in SkillsMP",
         "titleLabel": "Title",
-        "descriptionLabel": "Description"
+        "descriptionLabel": "Description",
+        "setupTitle": "Connect SkillsMP to explore more skills",
+        "setupDescription": "SkillsMP is a skill marketplace where you can discover reusable agent skills by popularity or search.",
+        "setupHint": "Add your SkillsMP API key in Settings > Other, then return here to browse marketplace results.",
+        "openSettings": "Open Settings"
       }
     },
     "pluginsManager": {
@@ -1485,6 +1489,7 @@
       "account": "Account",
       "settings": "Settings",
       "models": "Models",
+      "other": "Other",
       "usage": "Usage",
       "shortcuts": "Shortcuts"
     },
@@ -1623,7 +1628,27 @@
     "providerModelsManualHint": "Discovery is unavailable for this provider. Enter the model names manually.",
     "providerModelsEmpty": "No models found",
     "providerModelsUseCustom": "Use custom model: {{model}}",
-    "providerFieldAnnotation": "Leave API Key blank to keep the current key. Leave Base URL blank to use the default endpoint. Enter model names manually and press Enter or click add."
+    "providerFieldAnnotation": "Leave API Key blank to keep the current key. Leave Base URL blank to use the default endpoint. Enter model names manually and press Enter or click add.",
+    "other": {
+      "title": "Other Integrations",
+      "description": "Manage extra service credentials that do not belong to model providers.",
+      "skillsmp": {
+        "title": "SkillsMP",
+        "subtitle": "Enable marketplace search and recommendations for external skills.",
+        "description": "SkillsMP API key",
+        "statusChecking": "Checking...",
+        "statusReady": "Ready",
+        "statusMissing": "Not configured",
+        "keyLabel": "SkillsMP API Key",
+        "keyPlaceholder": "Enter your SkillsMP API key",
+        "help": "This key unlocks SkillsMP marketplace search and recommendation requests inside the skill import dialog.",
+        "docsLink": "SkillsMP API docs",
+        "customKeySaved": "A custom user-level key is already stored for this account.",
+        "save": "Save key",
+        "clear": "Remove custom key",
+        "clearError": "Failed to refresh SkillsMP status"
+      }
+    }
   },
   "validation": {
     "projectNameRequired": "Please enter a project name",
