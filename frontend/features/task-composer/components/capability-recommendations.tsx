@@ -49,7 +49,7 @@ function RecommendationCard({
       aria-label={toggleLabel}
       onClick={() => onToggle(item, !enabled)}
       title={toggleLabel}
-      className="group h-full min-h-[72px] w-full rounded-xl border border-border/40 dark:border-border/80 bg-background/70 px-3 py-3 text-left transition-[border-color,background-color] hover:border-border/70 dark:hover:border-border hover:bg-muted/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      className="group flex min-h-[72px] w-full flex-col justify-center rounded-xl border border-border/40 dark:border-border/80 bg-background/70 px-3 py-3 text-left transition-[border-color,background-color] hover:border-border/70 dark:hover:border-border hover:bg-muted/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
     >
       <div className="flex min-w-0 items-start gap-3">
         <CapabilitySourceAvatar
@@ -128,7 +128,8 @@ export function CapabilityRecommendations({
     >
       {itemsToRender.length > 0 ? (
         <>
-          <div className="grid auto-rows-fr grid-cols-3 gap-2">
+          {/* Safari can oversize implicit fr rows here, so keep row height content-driven. */}
+          <div className="grid grid-cols-3 gap-2">
             {itemsToRender.map((item, index) => (
               <div
                 key={`${item.type}:${item.id}`}
