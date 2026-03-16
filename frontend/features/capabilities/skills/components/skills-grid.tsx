@@ -99,14 +99,11 @@ export function SkillsGrid({
             const install = installBySkillId.get(skill.id);
             const isBuiltin = skill.scope === "system";
             const isAgentCreated =
-              skill.scope === "user" &&
-              skill.source?.kind === "skill-creator";
+              skill.scope === "user" && skill.source?.kind === "skill-creator";
             const hasInstall = Boolean(install);
             const isInstalled = hasInstall || isBuiltin;
             const isRowLoading =
-              isLoading ||
-              loadingId === skill.id ||
-              loadingId === install?.id;
+              isLoading || loadingId === skill.id || loadingId === install?.id;
             const isEnabled = install?.enabled ?? false;
             const avatarStatus = isBuiltin
               ? "active"
@@ -136,9 +133,9 @@ export function SkillsGrid({
                       onClick={() => onOpenSkillSettings?.(skill)}
                       disabled={!onOpenSkillSettings}
                       className={cn(
-                        "max-w-full truncate text-left font-medium underline underline-offset-4 decoration-transparent transition-[color,text-decoration-color] duration-200",
+                        "max-w-full truncate text-left font-medium underline underline-offset-4 decoration-transparent transition-[color,text-decoration-color] duration-300 ease-out",
                         onOpenSkillSettings
-                          ? "cursor-pointer hover:decoration-muted-foreground"
+                          ? "cursor-pointer hover:decoration-muted-foreground/30"
                           : "cursor-default",
                       )}
                     >
