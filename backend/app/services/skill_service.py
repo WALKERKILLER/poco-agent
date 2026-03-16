@@ -1,5 +1,6 @@
 import mimetypes
 import re
+import uuid
 from pathlib import PurePosixPath
 from typing import Any
 
@@ -18,6 +19,7 @@ from app.schemas.skill import (
 from app.schemas.workspace import FileNode
 from app.services.storage_service import S3StorageService
 from app.services.source_utils import infer_capability_source
+from app.utils.markdown_front_matter import update_yaml_front_matter
 from app.utils.workspace import build_workspace_file_nodes
 from app.utils.workspace_manifest import (
     build_nodes_from_file_entries,
@@ -119,6 +121,7 @@ class SkillService:
                 message="Skill does not belong to the user",
             )
 
+        target_name = skill.name
         if (
             request.name is not None
             and request.name.strip()
@@ -130,12 +133,28 @@ class SkillService:
                     error_code=ErrorCode.SKILL_ALREADY_EXISTS,
                     message=f"Skill already exists: {new_name}",
                 )
-            skill.name = new_name
+            target_name = new_name
+
+        target_description = skill.description
+        if request.description is not None:
+            target_description = request.description.strip() or None
+
+        if request.entry is None:
+            versioned_entry = self._version_skill_assets(
+                skill=skill,
+                user_id=user_id,
+                target_name=target_name,
+                target_description=target_description,
+            )
+            if versioned_entry is not None:
+                skill.entry = versioned_entry
+
+        skill.name = target_name
 
         if request.scope is not None and request.scope.strip():
             skill.scope = request.scope.strip()
         if request.description is not None:
-            skill.description = request.description.strip() or None
+            skill.description = target_description
         if request.entry is not None:
             skill.entry = request.entry
 
@@ -264,6 +283,78 @@ class SkillService:
         if self.storage_service is None:
             self.storage_service = S3StorageService()
         return self.storage_service
+
+    def _version_skill_assets(
+        self,
+        *,
+        skill: Skill,
+        user_id: str,
+        target_name: str,
+        target_description: str | None,
+    ) -> dict[str, Any] | None:
+        if skill.scope == "system" or not isinstance(skill.entry, dict):
+            return None
+
+        raw_key = skill.entry.get("s3_key")
+        if not isinstance(raw_key, str) or not raw_key.strip():
+            return None
+
+        if target_name == skill.name and target_description == skill.description:
+            return None
+
+        source_key = raw_key.strip()
+        if not self._is_prefix_entry(skill.entry, source_key):
+            return None
+
+        source_prefix = source_key.rstrip("/")
+        if not source_prefix:
+            return None
+
+        destination_prefix = f"skills/{user_id}/{target_name}/{uuid.uuid4()}"
+        storage_service = self._storage_service()
+        copied = storage_service.copy_prefix(
+            source_prefix=source_prefix,
+            destination_prefix=destination_prefix,
+        )
+        if copied == 0:
+            raise AppException(
+                error_code=ErrorCode.BAD_REQUEST,
+                message="No skill files found to version",
+            )
+
+        self._rewrite_skill_markdown(
+            destination_prefix=destination_prefix,
+            skill_name=target_name,
+            description=target_description,
+        )
+
+        next_entry = dict(skill.entry)
+        next_entry["s3_key"] = f"{destination_prefix}/"
+        next_entry["is_prefix"] = True
+        return next_entry
+
+    def _rewrite_skill_markdown(
+        self,
+        *,
+        destination_prefix: str,
+        skill_name: str,
+        description: str | None,
+    ) -> None:
+        skill_markdown_key = f"{destination_prefix.rstrip('/')}/SKILL.md"
+        storage_service = self._storage_service()
+        markdown = storage_service.get_text(skill_markdown_key)
+        updated_markdown = update_yaml_front_matter(
+            markdown,
+            {
+                "name": skill_name,
+                "description": description,
+            },
+        )
+        storage_service.put_object(
+            key=skill_markdown_key,
+            body=updated_markdown.encode("utf-8"),
+            content_type="text/markdown; charset=utf-8",
+        )
 
     @staticmethod
     def _to_response(skill: Skill) -> SkillResponse:
