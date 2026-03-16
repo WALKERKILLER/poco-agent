@@ -1,17 +1,22 @@
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user_id
+from app.core.deps import get_current_user_id, get_db
 from app.schemas.response import Response, ResponseSchema
+from app.schemas.skill_import import SkillImportDiscoverResponse
 from app.schemas.skill_marketplace import (
+    SkillsMpImportDiscoverRequest,
     SkillsMpRecommendationsResponse,
     SkillsMpSearchResponse,
 )
 from app.services.marketplace import SkillsMpService
+from app.services.skill_import_service import SkillImportService
 
 router = APIRouter(prefix="/skills/marketplace", tags=["skills"])
 
 skillsmp_service = SkillsMpService()
+import_service = SkillImportService()
 
 
 @router.get(
@@ -47,3 +52,34 @@ async def list_skills_marketplace_recommendations(
         data=result,
         message="SkillsMP recommendations completed successfully",
     )
+
+
+@router.post(
+    "/import/discover",
+    response_model=ResponseSchema[SkillImportDiscoverResponse],
+)
+def discover_skills_marketplace_import(
+    request: SkillsMpImportDiscoverRequest,
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+) -> JSONResponse:
+    github_url = skillsmp_service.build_import_github_url(request.item)
+    archive_source = skillsmp_service.build_import_source(request.item)
+    result = import_service.discover(
+        db,
+        user_id=user_id,
+        file=None,
+        github_url=github_url,
+        archive_source_override=archive_source,
+    )
+    preselected_relative_path = skillsmp_service.match_preselected_relative_path(
+        result.candidates,
+        request.item.relative_skill_path,
+    )
+    response = result.model_copy(
+        update={
+            "preselected_relative_path": preselected_relative_path,
+            "skillsmp_item": request.item,
+        }
+    )
+    return Response.success(data=response, message="SkillsMP import discovered")

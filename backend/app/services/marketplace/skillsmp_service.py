@@ -1,12 +1,14 @@
 from datetime import datetime
 from typing import Any
-from urllib.parse import quote
+from pathlib import PurePosixPath
+from urllib.parse import quote, urlparse
 
 import httpx
 
 from app.core.errors.error_codes import ErrorCode
 from app.core.errors.exceptions import AppException
 from app.core.settings import get_settings
+from app.schemas.skill_import import SkillImportCandidate
 from app.schemas.skill_marketplace import (
     SkillsMpRecommendationSection,
     SkillsMpRecommendationsResponse,
@@ -120,6 +122,127 @@ class SkillsMpService:
 
     def _build_detail_url(self, external_id: str) -> str:
         return f"{self._resolve_base_url()}/skills/{quote(external_id, safe='')}"
+
+    @classmethod
+    def _normalize_relative_skill_path(cls, value: str | None) -> str | None:
+        cleaned = cls._clean_text(value)
+        if not cleaned:
+            return None
+        path = PurePosixPath(cleaned.strip("/"))
+        if path.name.lower() == "skill.md":
+            path = path.parent
+        normalized = path.as_posix()
+        if normalized in {"", "."}:
+            return "."
+        return normalized
+
+    @classmethod
+    def _extract_repo_root(cls, github_url: str) -> str:
+        cleaned = cls._clean_text(github_url)
+        if not cleaned:
+            raise AppException(
+                error_code=ErrorCode.BAD_REQUEST,
+                message="SkillsMP item github_url cannot be empty",
+            )
+        parsed = urlparse(cleaned)
+        if parsed.scheme not in {"http", "https"} or parsed.netloc.lower() != "github.com":
+            raise AppException(
+                error_code=ErrorCode.BAD_REQUEST,
+                message="SkillsMP item github_url must point to github.com",
+            )
+        segments = [segment for segment in parsed.path.strip("/").split("/") if segment]
+        if len(segments) < 2:
+            raise AppException(
+                error_code=ErrorCode.BAD_REQUEST,
+                message="SkillsMP item github_url must include owner and repo",
+            )
+        owner = segments[0]
+        repo = segments[1].removesuffix(".git")
+        return f"https://github.com/{owner}/{repo}"
+
+    def build_import_github_url(self, item: SkillsMpSkillItem) -> str:
+        cleaned_github_url = self._clean_text(item.github_url)
+        if not cleaned_github_url:
+            raise AppException(
+                error_code=ErrorCode.BAD_REQUEST,
+                message="Selected SkillsMP item does not include github_url",
+            )
+
+        parsed = urlparse(cleaned_github_url)
+        if "/tree/" in parsed.path or "/blob/" in parsed.path:
+            return cleaned_github_url
+
+        branch = self._clean_text(item.branch)
+        relative_skill_path = self._normalize_relative_skill_path(item.relative_skill_path)
+        if not branch or "/" in branch:
+            return cleaned_github_url
+
+        repo_root = self._extract_repo_root(cleaned_github_url)
+        encoded_parts = [quote(part, safe="") for part in branch.split("/")]
+        if relative_skill_path and relative_skill_path != ".":
+            encoded_parts.extend(
+                quote(part, safe="") for part in PurePosixPath(relative_skill_path).parts
+            )
+        return f"{repo_root}/tree/{'/'.join(encoded_parts)}"
+
+    def build_import_source(self, item: SkillsMpSkillItem) -> dict[str, Any]:
+        external_id = self._clean_text(item.external_id)
+        if not external_id:
+            raise AppException(
+                error_code=ErrorCode.BAD_REQUEST,
+                message="Selected SkillsMP item does not include external_id",
+            )
+        source: dict[str, Any] = {
+            "kind": "marketplace",
+            "market": "skillsmp",
+            "external_id": external_id,
+            "url": self._build_detail_url(external_id),
+        }
+        try:
+            source["repo"] = self._extract_repo_root(item.github_url or "").replace(
+                "https://github.com/", "", 1
+            )
+        except AppException:
+            pass
+        branch = self._clean_text(item.branch)
+        if branch:
+            source["ref"] = branch
+        return source
+
+    def match_preselected_relative_path(
+        self,
+        candidates: list[SkillImportCandidate],
+        relative_skill_path: str | None,
+    ) -> str | None:
+        normalized_target = self._normalize_relative_skill_path(relative_skill_path)
+        if not normalized_target:
+            return None
+
+        exact_match: str | None = None
+        suffix_matches: list[str] = []
+        target_parts = PurePosixPath(normalized_target).parts
+
+        for candidate in candidates:
+            normalized_candidate = self._normalize_relative_skill_path(
+                candidate.relative_path
+            )
+            if not normalized_candidate:
+                continue
+            if normalized_candidate == normalized_target:
+                exact_match = candidate.relative_path
+                break
+
+            candidate_parts = PurePosixPath(normalized_candidate).parts
+            if len(candidate_parts) <= len(target_parts) and target_parts[
+                -len(candidate_parts) :
+            ] == candidate_parts:
+                suffix_matches.append(candidate.relative_path)
+
+        if exact_match is not None:
+            return exact_match
+        if len(suffix_matches) == 1:
+            return suffix_matches[0]
+        return None
 
     def _map_skill_item(self, raw_item: object) -> SkillsMpSkillItem | None:
         if not isinstance(raw_item, dict):

@@ -109,6 +109,7 @@ class SkillImportService:
         user_id: str,
         file: UploadFile | None,
         github_url: str | None,
+        archive_source_override: dict[str, Any] | None = None,
     ) -> SkillImportDiscoverResponse:
         if bool(file) == bool(github_url):
             raise AppException(
@@ -154,6 +155,11 @@ class SkillImportService:
                     github_url=github_url, destination=source_path
                 )
                 source_name = "github.zip"
+                if (
+                    isinstance(archive_source_override, dict)
+                    and isinstance(archive_source_override.get("kind"), str)
+                ):
+                    archive_source = archive_source_override
 
             candidates = self._scan_candidates(
                 zip_source_path=source_path, zip_source_bytes=source_bytes

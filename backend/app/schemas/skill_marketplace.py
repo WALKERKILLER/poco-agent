@@ -36,3 +36,7 @@ class SkillsMpRecommendationSection(BaseModel):
 
 class SkillsMpRecommendationsResponse(BaseModel):
     sections: list[SkillsMpRecommendationSection] = Field(default_factory=list)
+
+
+class SkillsMpImportDiscoverRequest(BaseModel):
+    item: SkillsMpSkillItem
