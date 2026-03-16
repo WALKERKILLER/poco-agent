@@ -1107,7 +1107,11 @@
         "actionFailed": "Opération échouée, veuillez réessayer plus tard"
       },
       "empty": "Aucune compétence pour le moment",
-      "unknownSkill": "Compétence inconnue"
+      "unknownSkill": "Compétence inconnue",
+      "sections": {
+        "system": "Compétences intégrées",
+        "custom": "Compétences personnalisées"
+      }
     },
     "skillsImport": {
       "title": "Importer des compétences",
@@ -1257,6 +1261,32 @@
     "presetsPage": {
       "header": {
         "title": "Préréglages"
+      }
+    },
+    "skillSettings": {
+      "title": "Paramètres de la compétence",
+      "subtitle": "Consultez les fichiers de la compétence et mettez à jour la configuration modifiable.",
+      "previewHint": "Sélectionnez un fichier à gauche pour prévisualiser son contenu complet.",
+      "loadingFiles": "Chargement des fichiers de la compétence…",
+      "emptyFiles": "Aucun fichier d’aperçu n’est disponible pour cette compétence.",
+      "nameLabel": "Nom de la compétence",
+      "namePlaceholder": "Saisissez un nom de compétence",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Ajoutez un bref résumé pour cette compétence",
+      "storagePathLabel": "Chemin de stockage",
+      "storagePathUnavailable": "Aucun chemin de stockage disponible.",
+      "readonlyHint": "Les compétences intégrées sont en lecture seule. Vous pouvez prévisualiser les fichiers ici, mais pas les modifier.",
+      "nameConflict": "Une compétence portant ce nom existe déjà.",
+      "toasts": {
+        "saved": "Compétence mise à jour",
+        "saveFailed": "Échec de la mise à jour de la compétence"
+      },
+      "source": {
+        "system": "Système",
+        "github": "GitHub",
+        "zip": "Archive ZIP",
+        "manual": "Manuel",
+        "unknown": "Source inconnue"
       }
     }
   },

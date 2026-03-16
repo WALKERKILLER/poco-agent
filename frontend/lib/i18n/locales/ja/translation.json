@@ -1107,7 +1107,11 @@
         "actionFailed": "操作に失敗しました。後でもう一度お試しください"
       },
       "empty": "まだスキルはありません",
-      "unknownSkill": "不明なスキル"
+      "unknownSkill": "不明なスキル",
+      "sections": {
+        "system": "組み込みスキル",
+        "custom": "カスタムスキル"
+      }
     },
     "skillsImport": {
       "title": "スキルをインポート",
@@ -1257,6 +1261,32 @@
     "presetsPage": {
       "header": {
         "title": "プリセット"
+      }
+    },
+    "skillSettings": {
+      "title": "スキル設定",
+      "subtitle": "スキルファイルを確認し、編集可能な設定を更新します。",
+      "previewHint": "左側のファイルを選択すると、完全な内容をプレビューできます。",
+      "loadingFiles": "スキルファイルを読み込み中…",
+      "emptyFiles": "このスキルでプレビュー可能なファイルはありません。",
+      "nameLabel": "スキル名",
+      "namePlaceholder": "スキル名を入力",
+      "descriptionLabel": "説明",
+      "descriptionPlaceholder": "このスキルの概要を入力してください",
+      "storagePathLabel": "保存パス",
+      "storagePathUnavailable": "利用可能な保存パスがありません。",
+      "readonlyHint": "組み込みスキルは読み取り専用です。ここでファイルをプレビューできますが、編集はできません。",
+      "nameConflict": "同じ名前のスキルがすでに存在します。",
+      "toasts": {
+        "saved": "スキルを更新しました",
+        "saveFailed": "スキルの更新に失敗しました"
+      },
+      "source": {
+        "system": "システム",
+        "github": "GitHub",
+        "zip": "ZIP パッケージ",
+        "manual": "手動作成",
+        "unknown": "不明なソース"
       }
     }
   },

@@ -1121,7 +1121,11 @@
         "actionFailed": "Operation failed, please try again later"
       },
       "empty": "No skills yet",
-      "unknownSkill": "Unknown skill"
+      "unknownSkill": "Unknown skill",
+      "sections": {
+        "system": "Built-in skills",
+        "custom": "Custom skills"
+      }
     },
     "skillsImport": {
       "title": "Import Skills",
@@ -1360,6 +1364,32 @@
     "presetsPage": {
       "header": {
         "title": "Presets"
+      }
+    },
+    "skillSettings": {
+      "title": "Skill settings",
+      "subtitle": "Review the skill files and update the editable configuration.",
+      "previewHint": "Select a file on the left to preview the complete content.",
+      "loadingFiles": "Loading skill files…",
+      "emptyFiles": "No preview files are available for this skill.",
+      "nameLabel": "Skill name",
+      "namePlaceholder": "Enter a skill name",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Add a brief summary for this skill",
+      "storagePathLabel": "Storage path",
+      "storagePathUnavailable": "No storage path available.",
+      "readonlyHint": "Built-in skills are read-only. You can preview files here, but editing is disabled.",
+      "nameConflict": "A skill with this name already exists.",
+      "toasts": {
+        "saved": "Skill updated",
+        "saveFailed": "Failed to update skill"
+      },
+      "source": {
+        "system": "System",
+        "github": "GitHub",
+        "zip": "ZIP package",
+        "manual": "Manual",
+        "unknown": "Unknown source"
       }
     }
   },

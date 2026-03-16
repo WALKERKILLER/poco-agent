@@ -1,5 +1,6 @@
 import { apiClient, API_ENDPOINTS } from "@/services/api-client";
 import { markSlashCommandSuggestionsInvalidated } from "@/features/capabilities/slash-commands/api/suggestions-state";
+import type { FileNode } from "@/features/chat";
 import type {
   SkillInstallCreateInput,
   SkillInstallUpdateInput,
@@ -31,6 +32,16 @@ export const skillsService = {
     options?: { revalidate?: number },
   ): Promise<Skill> => {
     return apiClient.get<Skill>(API_ENDPOINTS.skill(skillId), {
+      next: { revalidate: options?.revalidate },
+    });
+  },
+
+  listSkillFiles: async (
+    skillId: number,
+    options?: { revalidate?: number },
+  ): Promise<FileNode[]> => {
+    return apiClient.get<FileNode[]>(API_ENDPOINTS.skillFiles(skillId), {
+      cache: "no-store",
       next: { revalidate: options?.revalidate },
     });
   },

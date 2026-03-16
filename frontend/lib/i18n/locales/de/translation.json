@@ -1111,7 +1111,11 @@
         "actionFailed": "Operation fehlgeschlagen, bitte später erneut versuchen"
       },
       "empty": "Noch keine Skills",
-      "unknownSkill": "Unbekannter Skill"
+      "unknownSkill": "Unbekannter Skill",
+      "sections": {
+        "system": "Integrierte Skills",
+        "custom": "Benutzerdefinierte Skills"
+      }
     },
     "skillsImport": {
       "title": "Skills importieren",
@@ -1261,6 +1265,32 @@
     "presetsPage": {
       "header": {
         "title": "Vorlagen"
+      }
+    },
+    "skillSettings": {
+      "title": "Skill-Einstellungen",
+      "subtitle": "Prüfe die Skill-Dateien und aktualisiere die bearbeitbare Konfiguration.",
+      "previewHint": "Wähle links eine Datei aus, um den vollständigen Inhalt anzuzeigen.",
+      "loadingFiles": "Skill-Dateien werden geladen…",
+      "emptyFiles": "Für diesen Skill sind keine Vorschaudateien verfügbar.",
+      "nameLabel": "Skill-Name",
+      "namePlaceholder": "Skill-Namen eingeben",
+      "descriptionLabel": "Beschreibung",
+      "descriptionPlaceholder": "Füge eine kurze Beschreibung für diesen Skill hinzu",
+      "storagePathLabel": "Speicherpfad",
+      "storagePathUnavailable": "Kein Speicherpfad verfügbar.",
+      "readonlyHint": "Integrierte Skills sind schreibgeschützt. Du kannst Dateien hier ansehen, aber nicht bearbeiten.",
+      "nameConflict": "Ein Skill mit diesem Namen existiert bereits.",
+      "toasts": {
+        "saved": "Skill aktualisiert",
+        "saveFailed": "Skill konnte nicht aktualisiert werden"
+      },
+      "source": {
+        "system": "System",
+        "github": "GitHub",
+        "zip": "ZIP-Paket",
+        "manual": "Manuell",
+        "unknown": "Unbekannte Quelle"
       }
     }
   },
