@@ -4,7 +4,9 @@ import * as React from "react";
 import {
   ArrowUpRight,
   CalendarDays,
+  Clock3,
   Download,
+  Flame,
   Github,
   RefreshCw,
   Search,
@@ -20,6 +22,12 @@ import type {
   SkillsMpSkillItem,
 } from "@/features/capabilities/skills/types";
 import { useT } from "@/lib/i18n/client";
+
+function getRecommendationSectionIcon(sectionKey: string) {
+  if (sectionKey === "popular") return Flame;
+  if (sectionKey === "recent") return Clock3;
+  return Sparkles;
+}
 
 interface SkillMarketplaceBrowserProps {
   searchQuery: string;
@@ -308,16 +316,19 @@ export function SkillMarketplaceBrowser({
           {sections.map((section) => (
             <section key={section.key} className="space-y-4">
               <div className="flex items-center justify-between gap-3">
-                <div className="space-y-1">
-                  <h3 className="text-base font-semibold tracking-tight">
+                <div>
+                  <h3 className="inline-flex items-center gap-2 text-base font-semibold tracking-tight">
+                    {React.createElement(
+                      getRecommendationSectionIcon(section.key),
+                      {
+                        className: "size-4 text-muted-foreground",
+                      },
+                    )}
                     {section.title ||
                       t(
                         `library.skillsImport.marketplace.sections.${section.key}`,
                       )}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t("library.skillsImport.marketplace.recommendationHint")}
-                  </p>
                 </div>
               </div>
               {section.items.length === 0 ? (
