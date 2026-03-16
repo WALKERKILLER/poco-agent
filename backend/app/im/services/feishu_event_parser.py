@@ -5,7 +5,7 @@ from typing import Any
 from app.im.schemas.im_message import InboundMessage
 
 _LEADING_MENTION_RE = re.compile(r"^(?:<at\s+[^>]*>.*?</at>\s*)+")
-_LEADING_PLAIN_MENTION_RE = re.compile(r"^(?:[@＠][^\s]+\s*)+")
+_LEADING_PLAIN_MENTION_RE = re.compile(r"^(?:[@\uff20][^\s]+\s*)+")
 
 
 def parse_feishu_webhook_event(payload: dict[str, Any]) -> InboundMessage | None:
@@ -161,7 +161,7 @@ def _normalize_text(text: str) -> str:
 
 
 def _requires_explicit_mention(chat_type: str) -> bool:
-    return bool(chat_type and chat_type != "p2p")
+    return chat_type != "p2p"
 
 
 def _has_leading_mention(text: str) -> bool:
