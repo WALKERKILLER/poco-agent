@@ -4,10 +4,12 @@ export type SourceKind =
   | "system"
   | "manual"
   | "unknown"
-  | "skill-creator";
+  | "skill-creator"
+  | "marketplace";
 
 export interface SourceInfo {
   kind: SourceKind;
+  market?: string | null;
   repo?: string | null;
   url?: string | null;
   ref?: string | null;

@@ -109,9 +109,14 @@ export const API_ENDPOINTS = {
   // Skills
   skills: "/skills",
   skill: (skillId: number) => `/skills/${skillId}`,
+  skillFiles: (skillId: number) => `/skills/${skillId}/files`,
   skillImportDiscover: "/skills/import/discover",
   skillImportCommit: "/skills/import/commit",
   skillImportJob: (jobId: string) => `/skills/import/jobs/${jobId}`,
+  skillsMarketplaceStatus: "/skills/marketplace/status",
+  skillsMarketplaceSearch: "/skills/marketplace/search",
+  skillsMarketplaceRecommendations: "/skills/marketplace/recommendations",
+  skillsMarketplaceImportDiscover: "/skills/marketplace/import/discover",
   pendingSkillCreations: "/pending-skill-creations",
   pendingSkillCreation: (creationId: string) =>
     `/pending-skill-creations/${creationId}`,

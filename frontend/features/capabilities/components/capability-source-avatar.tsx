@@ -4,6 +4,7 @@ import {
   Archive,
   BadgeQuestionMark,
   Bot,
+  Compass,
   Github,
   Pencil,
   ShieldCheck,
@@ -22,6 +23,7 @@ const SOURCE_ICON_MAP: Record<SourceKind, LucideIcon> = {
   system: ShieldCheck,
   manual: Pencil,
   "skill-creator": Bot,
+  marketplace: Compass,
   unknown: BadgeQuestionMark,
 };
 

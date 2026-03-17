@@ -12,9 +12,7 @@ from app.api.v1 import (
     internal_env_vars,
     internal_memories,
     internal_skills,
-    im_dingtalk,
-    im_feishu,
-    im_telegram,
+    im,
     internal_plugin_config,
     internal_slash_commands,
     internal_mcp_config,
@@ -36,6 +34,7 @@ from app.api.v1 import (
     scheduled_tasks,
     session_queue,
     sessions,
+    skill_marketplace,
     slash_commands,
     skill_installs,
     skill_imports,
@@ -69,9 +68,7 @@ api_v1_router.include_router(env_vars.router)
 api_v1_router.include_router(claude_md.router)
 api_v1_router.include_router(models.router)
 api_v1_router.include_router(search.router)
-api_v1_router.include_router(im_telegram.router)
-api_v1_router.include_router(im_dingtalk.router)
-api_v1_router.include_router(im_feishu.router)
+api_v1_router.include_router(im.router)
 api_v1_router.include_router(internal_claude_md.router)
 api_v1_router.include_router(internal_env_vars.router)
 api_v1_router.include_router(internal_memories.router)
@@ -86,6 +83,7 @@ api_v1_router.include_router(internal_plugin_config.router)
 api_v1_router.include_router(mcp_servers.router)
 api_v1_router.include_router(user_mcp_installs.router)
 api_v1_router.include_router(skills.router)
+api_v1_router.include_router(skill_marketplace.router)
 api_v1_router.include_router(skill_imports.router)
 api_v1_router.include_router(skill_installs.router)
 api_v1_router.include_router(pending_skill_creations.router)

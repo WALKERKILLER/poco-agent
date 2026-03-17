@@ -91,6 +91,10 @@ class Settings(BaseSettings):
         default="https://open.feishu.cn",
         alias="FEISHU_BASE_URL",
     )
+    feishu_bot_user_id: str | None = Field(default=None, alias="FEISHU_BOT_USER_ID")
+    feishu_bot_open_id: str | None = Field(default=None, alias="FEISHU_BOT_OPEN_ID")
+    feishu_bot_union_id: str | None = Field(default=None, alias="FEISHU_BOT_UNION_ID")
+    feishu_bot_name: str | None = Field(default=None, alias="FEISHU_BOT_NAME")
 
     s3_endpoint: str | None = Field(default=None, alias="S3_ENDPOINT")
     s3_public_endpoint: str | None = Field(default=None, alias="S3_PUBLIC_ENDPOINT")
@@ -130,6 +134,13 @@ class Settings(BaseSettings):
     model_list: list[str] = Field(default_factory=list, alias="MODEL_LIST")
     max_upload_size_mb: int = Field(default=100, alias="MAX_UPLOAD_SIZE_MB")
     max_audio_upload_size_mb: int = Field(default=25, alias="MAX_AUDIO_UPLOAD_SIZE_MB")
+    skillsmp_base_url: str = Field(
+        default="https://skillsmp.com", alias="SKILLSMP_BASE_URL"
+    )
+    skillsmp_api_key: str = Field(default="", alias="SKILLSMP_API_KEY")
+    skillsmp_timeout_seconds: float = Field(
+        default=10.0, alias="SKILLSMP_TIMEOUT_SECONDS"
+    )
 
     # Memory (Mem0)
     mem0_enabled: bool = Field(default=False, alias="MEM0_ENABLED")

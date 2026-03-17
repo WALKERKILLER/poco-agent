@@ -1107,14 +1107,19 @@
         "actionFailed": "Не удалось выполнить операцию, попробуйте позже"
       },
       "empty": "Пока нет навыков",
-      "unknownSkill": "Неизвестный навык"
+      "unknownSkill": "Неизвестный навык",
+      "sections": {
+        "system": "Встроенные навыки",
+        "custom": "Пользовательские навыки"
+      }
     },
     "skillsImport": {
       "title": "Импорт навыков",
       "tabs": {
         "zip": "Загрузить Zip",
         "github": "GitHub URL",
-        "command": "Импорт через npx-команду"
+        "command": "Импорт через npx-команду",
+        "marketplace": "Маркетплейс навыков"
       },
       "fields": {
         "zip": "Zip-файл",
@@ -1124,12 +1129,14 @@
       "placeholders": {
         "githubUrl": "https://github.com/owner/repo",
         "name": "например, my-skill",
-        "command": "npx skills add https://github.com/owner/repo --skill my-skill"
+        "command": "npx skills add https://github.com/owner/repo --skill my-skill",
+        "marketplaceSearch": "Search SkillsMP skills, for example git automation"
       },
       "hints": {
         "github": "По умолчанию main/master (только публичные репозитории github.com)",
         "nameRequired": "SKILL.md находится в корне архива; требуется имя",
-        "command": "Вставьте команду add — мы автоматически извлечем GitHub URL и --skill."
+        "command": "Вставьте команду add — мы автоматически извлечем GitHub URL и --skill.",
+        "marketplace": "Discover SkillsMP skills through recommendations or search, then continue with Poco's existing import flow."
       },
       "actions": {
         "back": "Назад",
@@ -1174,12 +1181,38 @@
         "commitError": "Не удалось импортировать, попробуйте позже",
         "partialFailed": "Не удалось импортировать некоторые навыки. Пожалуйста, просмотрите детали.",
         "commitTimeout": "Истекло время ожидания импорта, попробуйте позже",
-        "invalidCommand": "Не удалось разобрать команду. Укажите URL с github.com."
+        "invalidCommand": "Не удалось разобрать команду. Укажите URL с github.com.",
+        "marketplaceLoadError": "Не удалось загрузить данные SkillsMP. Повторите попытку позже.",
+        "marketplaceDiscoverError": "Не удалось разрешить этот навык SkillsMP. Повторите попытку позже."
       },
       "progress": {
         "title": "Прогресс импорта",
         "value": "Прогресс",
         "jobId": "ID задания"
+      },
+      "marketplace": {
+        "search": "Поиск",
+        "reset": "Назад к рекомендациям",
+        "searchResults": "{{count}} результатов",
+        "emptySearch": "Подходящие навыки SkillsMP не найдены.",
+        "emptyRecommendations": "Сейчас нет доступных рекомендаций SkillsMP.",
+        "download": "Скачать",
+        "downloading": "Обработка...",
+        "jump": "Открыть",
+        "noDescription": "Описание пока недоступно.",
+        "sections": {
+          "popular": "Популярное"
+        },
+        "aiSearchTooltip": "Включить AI Search и использовать семантический поиск SkillsMP",
+        "refresh": "Обновить рекомендации",
+        "openInGithub": "Открыть в GitHub",
+        "checkInSkillsmp": "Открыть в SkillsMP",
+        "titleLabel": "Название",
+        "descriptionLabel": "Описание",
+        "setupTitle": "Подключите SkillsMP, чтобы находить больше skills",
+        "setupDescription": "SkillsMP — это marketplace skills, где можно находить переиспользуемые agent skills по популярности или через поиск.",
+        "setupHint": "Сначала добавьте ваш API-ключ SkillsMP в Настройки > Другое, затем вернитесь сюда.",
+        "openSettings": "Открыть настройки"
       }
     },
     "pluginsPage": {
@@ -1243,7 +1276,9 @@
       "system": "Система",
       "manual": "Вручную",
       "unknown": "Неизвестно",
-      "skillCreator": "Skill Creator"
+      "skillCreator": "Skill Creator",
+      "marketplace": "Marketplace",
+      "skillsmp": "SkillsMP"
     },
     "pluginsManager": {
       "toasts": {
@@ -1257,6 +1292,34 @@
     "presetsPage": {
       "header": {
         "title": "Пресеты"
+      }
+    },
+    "skillSettings": {
+      "title": "Настройки навыка",
+      "subtitle": "Просмотрите файлы навыка и обновите редактируемую конфигурацию.",
+      "previewHint": "Выберите файл слева, чтобы просмотреть его полное содержимое.",
+      "loadingFiles": "Загрузка файлов навыка…",
+      "emptyFiles": "Для этого навыка нет файлов, доступных для предпросмотра.",
+      "nameLabel": "Название навыка",
+      "namePlaceholder": "Введите название навыка",
+      "descriptionLabel": "Описание",
+      "descriptionPlaceholder": "Добавьте краткое описание этого навыка",
+      "storagePathLabel": "Путь хранения",
+      "storagePathUnavailable": "Путь хранения недоступен.",
+      "readonlyHint": "Встроенные навыки доступны только для чтения. Здесь можно просматривать файлы, но нельзя их редактировать.",
+      "nameConflict": "Навык с таким именем уже существует.",
+      "toasts": {
+        "saved": "Навык обновлён",
+        "saveFailed": "Не удалось обновить навык"
+      },
+      "source": {
+        "system": "Система",
+        "github": "GitHub",
+        "zip": "ZIP-архив",
+        "manual": "Вручную",
+        "unknown": "Неизвестный источник",
+        "marketplace": "Marketplace",
+        "skillsmp": "SkillsMP"
       }
     }
   },
@@ -1322,6 +1385,7 @@
       "account": "Аккаунт",
       "settings": "Настройки",
       "models": "Модели",
+      "other": "Другое",
       "usage": "Использование",
       "shortcuts": "Shortcuts"
     },
@@ -1460,7 +1524,27 @@
     "providerModelsManualHint": "Для этого провайдера автоматическое обнаружение недоступно. Введите имена моделей вручную.",
     "providerModelsEmpty": "Модели не найдены",
     "providerModelsUseCustom": "Использовать пользовательскую модель: {{model}}",
-    "providerFieldAnnotation": "Оставьте API Key пустым, чтобы сохранить текущий ключ. Оставьте Base URL пустым, чтобы использовать endpoint по умолчанию. Имена моделей вводятся вручную, затем нажмите Enter или кнопку добавления."
+    "providerFieldAnnotation": "Оставьте API Key пустым, чтобы сохранить текущий ключ. Оставьте Base URL пустым, чтобы использовать endpoint по умолчанию. Имена моделей вводятся вручную, затем нажмите Enter или кнопку добавления.",
+    "other": {
+      "title": "Другие интеграции",
+      "description": "Управление дополнительными учетными данными сервисов вне провайдеров моделей.",
+      "skillsmp": {
+        "title": "SkillsMP",
+        "subtitle": "Включает поиск и рекомендации marketplace для внешних skills.",
+        "description": "API-ключ SkillsMP",
+        "statusChecking": "Проверка...",
+        "statusReady": "Готово",
+        "statusMissing": "Не настроено",
+        "keyLabel": "API-ключ SkillsMP",
+        "keyPlaceholder": "Введите API-ключ SkillsMP",
+        "help": "Включает поиск и рекомендации SkillsMP в диалоге импорта skills.",
+        "docsLink": "Документация API SkillsMP",
+        "customKeySaved": "Для этого аккаунта уже сохранен пользовательский ключ.",
+        "save": "Сохранить ключ",
+        "clear": "Удалить пользовательский ключ",
+        "clearError": "Не удалось обновить статус SkillsMP"
+      }
+    }
   },
   "validation": {
     "projectNameRequired": "Пожалуйста, введите имя проекта",
