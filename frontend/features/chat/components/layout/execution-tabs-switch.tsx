@@ -8,8 +8,6 @@ import { useT } from "@/lib/i18n/client";
 
 interface ExecutionTabsSwitchProps {
   rightTab: string;
-  isSessionActive: boolean;
-  sessionStatus?: string;
   highlightId: string;
   showArtifactsTab: boolean;
   showComputerTab: boolean;
@@ -17,8 +15,6 @@ interface ExecutionTabsSwitchProps {
 
 export function ExecutionTabsSwitch({
   rightTab,
-  isSessionActive,
-  sessionStatus,
   highlightId,
   showArtifactsTab,
   showComputerTab,
@@ -53,18 +49,6 @@ export function ExecutionTabsSwitch({
             <span className="relative z-10 truncate">
               {t("mobile.computer")}
             </span>
-            {sessionStatus && isSessionActive ? (
-              <span
-                className="relative z-10 ml-1 inline-flex shrink-0"
-                aria-label={t("computer.status.live")}
-                title={t("computer.status.live")}
-              >
-                <span
-                  aria-hidden
-                  className="size-2 rounded-full bg-primary-foreground/80 motion-safe:animate-pulse"
-                />
-              </span>
-            ) : null}
           </button>
         </TabsTrigger>
       ) : null}
