@@ -22,6 +22,10 @@ import {
   writeCachedSkillsMarketplaceRecommendations,
 } from "@/features/capabilities/skills/api/skills-marketplace-cache";
 import { skillsService } from "@/features/capabilities/skills/api/skills-api";
+import {
+  SKILLS_MARKETPLACE_CONFIG_CHANGED_EVENT,
+  type SkillsMarketplaceConfigChangedDetail,
+} from "@/features/capabilities/skills/api/skills-marketplace-state";
 import { SkillImportDialog } from "@/features/capabilities/skills/components/skill-import-dialog";
 import { SkillMarketplaceBrowser } from "@/features/capabilities/skills/components/skill-marketplace-browser";
 import type {
@@ -202,6 +206,56 @@ export function SkillsMarketplacePageClient() {
     setHasActiveSearch(false);
     await loadMarketplaceRecommendations({ forceRefresh: true });
   }, [loadMarketplaceRecommendations]);
+
+  const handleMarketplaceConfiguredChange = React.useCallback(
+    async (configured: boolean) => {
+      if (!isActiveRef.current) return;
+
+      setIsConfigured(configured);
+      setErrorMessage(null);
+
+      if (!configured) {
+        clearCachedSkillsMarketplaceRecommendations();
+        setRecommendations([]);
+        setSearchItems([]);
+        setHasActiveSearch(false);
+        return;
+      }
+
+      if (hasActiveSearch && searchQuery.trim()) {
+        await searchMarketplace();
+        return;
+      }
+
+      await loadMarketplaceRecommendations({ forceRefresh: true });
+    },
+    [
+      hasActiveSearch,
+      loadMarketplaceRecommendations,
+      searchMarketplace,
+      searchQuery,
+    ],
+  );
+
+  React.useEffect(() => {
+    const handleConfigChanged = (event: Event) => {
+      const detail = (event as CustomEvent<SkillsMarketplaceConfigChangedDetail>)
+        .detail;
+      void handleMarketplaceConfiguredChange(detail?.configured ?? false);
+    };
+
+    window.addEventListener(
+      SKILLS_MARKETPLACE_CONFIG_CHANGED_EVENT,
+      handleConfigChanged,
+    );
+
+    return () => {
+      window.removeEventListener(
+        SKILLS_MARKETPLACE_CONFIG_CHANGED_EVENT,
+        handleConfigChanged,
+      );
+    };
+  }, [handleMarketplaceConfiguredChange]);
 
   const onMarketplaceDownload = React.useCallback(
     async (item: SkillsMpSkillItem) => {
