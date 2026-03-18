@@ -1212,7 +1212,10 @@
         "setupTitle": "Connectez SkillsMP pour découvrir plus de skills",
         "setupDescription": "SkillsMP est une marketplace de skills où vous pouvez découvrir des agent skills réutilisables par popularité ou via la recherche.",
         "setupHint": "Ajoutez d'abord votre clé API SkillsMP dans Paramètres > Autre, puis revenez ici pour parcourir le marketplace.",
-        "openSettings": "Ouvrir les paramètres"
+        "openSettings": "Ouvrir les paramètres",
+        "invalidKeyTitle": "Votre clé API SkillsMP est invalide",
+        "invalidKeyDescription": "SkillsMP a rejeté la clé API actuelle. La recherche et les recommandations du marketplace sont donc indisponibles.",
+        "invalidKeyHint": "Ouvrez Paramètres > Autre, mettez à jour la clé API SkillsMP, puis revenez ici pour réessayer."
       }
     },
     "pluginsPage": {

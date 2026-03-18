@@ -1212,7 +1212,10 @@
         "setupTitle": "Подключите SkillsMP, чтобы находить больше skills",
         "setupDescription": "SkillsMP — это marketplace skills, где можно находить переиспользуемые agent skills по популярности или через поиск.",
         "setupHint": "Сначала добавьте ваш API-ключ SkillsMP в Настройки > Другое, затем вернитесь сюда.",
-        "openSettings": "Открыть настройки"
+        "openSettings": "Открыть настройки",
+        "invalidKeyTitle": "Текущий API-ключ SkillsMP недействителен",
+        "invalidKeyDescription": "SkillsMP отклонил текущий API-ключ, поэтому поиск и рекомендации marketplace сейчас недоступны.",
+        "invalidKeyHint": "Откройте Настройки > Другое, обновите API-ключ SkillsMP и затем вернитесь сюда, чтобы попробовать снова."
       }
     },
     "pluginsPage": {
