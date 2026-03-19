@@ -1229,7 +1229,10 @@
         "setupTitle": "连接 SkillsMP，发现更多技能",
         "setupDescription": "SkillsMP 是一个技能市场，你可以按热门或搜索方式发现可复用的 agent skill。",
         "setupHint": "请先前往 设置 > 其他 填写 SkillsMP API Key，然后再回到这里浏览市场结果。",
-        "openSettings": "前往设置"
+        "openSettings": "前往设置",
+        "invalidKeyTitle": "当前 SkillsMP API Key 无效",
+        "invalidKeyDescription": "SkillsMP 拒绝了当前的 API Key，因此暂时无法加载技能市场的搜索和推荐结果。",
+        "invalidKeyHint": "请前往 设置 > 其他 更新 SkillsMP API Key，保存后再返回重试。"
       }
     },
     "pluginsManager": {

@@ -1212,7 +1212,10 @@
         "setupTitle": "SkillsMP を接続して、さらに多くの skills を見つける",
         "setupDescription": "SkillsMP は、人気順や検索で再利用可能な agent skills を見つけられる skill marketplace です。",
         "setupHint": "まず 設定 > その他 で SkillsMP API キーを追加してから、ここに戻って marketplace を利用してください。",
-        "openSettings": "設定を開く"
+        "openSettings": "設定を開く",
+        "invalidKeyTitle": "現在の SkillsMP API キーは無効です",
+        "invalidKeyDescription": "現在の API キーは SkillsMP に拒否されたため、marketplace の検索とおすすめを読み込めません。",
+        "invalidKeyHint": "設定 > その他 で SkillsMP API キーを更新し、保存後にここへ戻ってもう一度お試しください。"
       }
     },
     "pluginsPage": {

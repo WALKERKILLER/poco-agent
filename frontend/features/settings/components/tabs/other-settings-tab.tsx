@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEnvVarsStore } from "@/features/capabilities/env-vars/hooks/use-env-vars-store";
 import { skillsService } from "@/features/capabilities/skills/api/skills-api";
+import { emitSkillsMarketplaceConfigChanged } from "@/features/capabilities/skills/api/skills-marketplace-state";
 import { useT } from "@/lib/i18n/client";
 
 const SKILLSMP_API_KEY = "SKILLSMP_API_KEY";
@@ -86,6 +87,7 @@ export function OtherSettingsTab() {
     try {
       const response = await skillsService.getMarketplaceStatus();
       setIsMarketplaceConfigured(response.configured);
+      emitSkillsMarketplaceConfigChanged({ configured: response.configured });
     } catch (error) {
       console.error("[Settings] Failed to refresh SkillsMP status:", error);
     }
@@ -100,6 +102,7 @@ export function OtherSettingsTab() {
     try {
       const response = await skillsService.getMarketplaceStatus();
       setIsMarketplaceConfigured(response.configured);
+      emitSkillsMarketplaceConfigChanged({ configured: response.configured });
     } catch (error) {
       console.error("[Settings] Failed to refresh SkillsMP status:", error);
       toast.error(t("settings.other.skillsmp.clearError"));

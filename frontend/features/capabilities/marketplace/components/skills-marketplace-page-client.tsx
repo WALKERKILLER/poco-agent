@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Settings2, Sparkles } from "lucide-react";
+import { KeyRound, Loader2, Settings2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { useAppShell } from "@/components/shell/app-shell-context";
@@ -22,6 +22,10 @@ import {
   writeCachedSkillsMarketplaceRecommendations,
 } from "@/features/capabilities/skills/api/skills-marketplace-cache";
 import { skillsService } from "@/features/capabilities/skills/api/skills-api";
+import {
+  SKILLS_MARKETPLACE_CONFIG_CHANGED_EVENT,
+  type SkillsMarketplaceConfigChangedDetail,
+} from "@/features/capabilities/skills/api/skills-marketplace-state";
 import { SkillImportDialog } from "@/features/capabilities/skills/components/skill-import-dialog";
 import { SkillMarketplaceBrowser } from "@/features/capabilities/skills/components/skill-marketplace-browser";
 import type {
@@ -31,6 +35,36 @@ import type {
 } from "@/features/capabilities/skills/types";
 import { ApiError } from "@/lib/errors";
 import { useT } from "@/lib/i18n/client";
+
+type MarketplaceErrorState = "invalidKey" | null;
+
+function isSkillsMarketplaceInvalidKeyError(error: unknown): boolean {
+  if (!(error instanceof ApiError)) return false;
+
+  const details = error.details as
+    | {
+        data?: {
+          provider?: string;
+          status_code?: number;
+        };
+      }
+    | undefined;
+
+  const provider = details?.data?.provider?.trim().toLowerCase();
+  const upstreamStatus = details?.data?.status_code;
+  const message = error.message.trim().toLowerCase();
+
+  if (provider !== "skillsmp") return false;
+  if (upstreamStatus === 401) return true;
+
+  return [
+    "invalid api key",
+    "api key format",
+    "unauthorized",
+    "invalid token",
+    "authentication",
+  ].some((fragment) => message.includes(fragment));
+}
 
 export function SkillsMarketplacePageClient() {
   const { t } = useT("translation");
@@ -43,6 +77,8 @@ export function SkillsMarketplacePageClient() {
   const [searchItems, setSearchItems] = React.useState<SkillsMpSkillItem[]>([]);
   const [hasActiveSearch, setHasActiveSearch] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const [marketplaceErrorState, setMarketplaceErrorState] =
+    React.useState<MarketplaceErrorState>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [downloadingExternalId, setDownloadingExternalId] = React.useState<
     string | null
@@ -95,6 +131,7 @@ export function SkillsMarketplacePageClient() {
           setSearchItems([]);
           setHasActiveSearch(false);
           setErrorMessage(null);
+          setMarketplaceErrorState(null);
           return;
         }
       } else {
@@ -113,17 +150,28 @@ export function SkillsMarketplacePageClient() {
         setRecommendations(nextSections);
         setSearchItems([]);
         setHasActiveSearch(false);
+        setMarketplaceErrorState(null);
       } catch (error) {
         console.error(
           "[SkillsMarketplacePage] marketplace recommendations failed:",
           error,
         );
         if (!isActiveRef.current) return;
+        if (isSkillsMarketplaceInvalidKeyError(error)) {
+          clearCachedSkillsMarketplaceRecommendations();
+          setRecommendations([]);
+          setSearchItems([]);
+          setHasActiveSearch(false);
+          setErrorMessage(null);
+          setMarketplaceErrorState("invalidKey");
+          return;
+        }
         setErrorMessage(
           error instanceof ApiError
             ? error.message
             : t("library.skillsImport.toasts.marketplaceLoadError"),
         );
+        setMarketplaceErrorState(null);
       } finally {
         if (isActiveRef.current) {
           setIsLoading(false);
@@ -171,17 +219,28 @@ export function SkillsMarketplacePageClient() {
       if (!isActiveRef.current) return;
       setSearchItems(response.items || []);
       setHasActiveSearch(true);
+      setMarketplaceErrorState(null);
     } catch (error) {
       console.error(
         "[SkillsMarketplacePage] marketplace search failed:",
         error,
       );
       if (!isActiveRef.current) return;
+      if (isSkillsMarketplaceInvalidKeyError(error)) {
+        clearCachedSkillsMarketplaceRecommendations();
+        setRecommendations([]);
+        setSearchItems([]);
+        setHasActiveSearch(false);
+        setErrorMessage(null);
+        setMarketplaceErrorState("invalidKey");
+        return;
+      }
       setErrorMessage(
         error instanceof ApiError
           ? error.message
           : t("library.skillsImport.toasts.marketplaceLoadError"),
       );
+      setMarketplaceErrorState(null);
     } finally {
       if (isActiveRef.current) {
         setIsLoading(false);
@@ -202,6 +261,58 @@ export function SkillsMarketplacePageClient() {
     setHasActiveSearch(false);
     await loadMarketplaceRecommendations({ forceRefresh: true });
   }, [loadMarketplaceRecommendations]);
+
+  const handleMarketplaceConfiguredChange = React.useCallback(
+    async (configured: boolean) => {
+      if (!isActiveRef.current) return;
+
+      setIsConfigured(configured);
+      setErrorMessage(null);
+      setMarketplaceErrorState(null);
+
+      if (!configured) {
+        clearCachedSkillsMarketplaceRecommendations();
+        setRecommendations([]);
+        setSearchItems([]);
+        setHasActiveSearch(false);
+        return;
+      }
+
+      if (hasActiveSearch && searchQuery.trim()) {
+        await searchMarketplace();
+        return;
+      }
+
+      await loadMarketplaceRecommendations({ forceRefresh: true });
+    },
+    [
+      hasActiveSearch,
+      loadMarketplaceRecommendations,
+      searchMarketplace,
+      searchQuery,
+    ],
+  );
+
+  React.useEffect(() => {
+    const handleConfigChanged = (event: Event) => {
+      const detail = (
+        event as CustomEvent<SkillsMarketplaceConfigChangedDetail>
+      ).detail;
+      void handleMarketplaceConfiguredChange(detail?.configured ?? false);
+    };
+
+    window.addEventListener(
+      SKILLS_MARKETPLACE_CONFIG_CHANGED_EVENT,
+      handleConfigChanged,
+    );
+
+    return () => {
+      window.removeEventListener(
+        SKILLS_MARKETPLACE_CONFIG_CHANGED_EVENT,
+        handleConfigChanged,
+      );
+    };
+  }, [handleMarketplaceConfiguredChange]);
 
   const onMarketplaceDownload = React.useCallback(
     async (item: SkillsMpSkillItem) => {
@@ -263,7 +374,7 @@ export function SkillsMarketplacePageClient() {
                 <Loader2 className="size-5 animate-spin text-muted-foreground" />
               </div>
             ) : !isConfigured ? (
-              <Empty className="min-h-[24rem] rounded-[1.5rem] border border-border/60 bg-gradient-to-br from-muted/25 via-background to-background px-6 py-10">
+              <Empty className="min-h-[24rem] rounded-[1.5rem] border border-border/60 bg-muted/20 px-6 py-10">
                 <EmptyHeader>
                   <EmptyMedia variant="icon" className="size-14 rounded-2xl">
                     <Sparkles className="size-7" />
@@ -278,6 +389,38 @@ export function SkillsMarketplacePageClient() {
                 <EmptyContent className="max-w-md">
                   <p className="text-sm leading-6 text-muted-foreground">
                     {t("library.skillsImport.marketplace.setupHint")}
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={openMarketplaceSettings}
+                    className="min-w-44"
+                  >
+                    <Settings2 className="size-4" />
+                    {t("library.skillsImport.marketplace.openSettings")}
+                  </Button>
+                </EmptyContent>
+              </Empty>
+            ) : marketplaceErrorState === "invalidKey" ? (
+              <Empty className="min-h-[24rem] rounded-[1.5rem] border border-amber-500/20 bg-muted/20 px-6 py-10">
+                <EmptyHeader className="gap-3">
+                  <EmptyMedia
+                    variant="icon"
+                    className="size-14 rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                  >
+                    <KeyRound className="size-7" />
+                  </EmptyMedia>
+                  <EmptyTitle>
+                    {t("library.skillsImport.marketplace.invalidKeyTitle")}
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    {t(
+                      "library.skillsImport.marketplace.invalidKeyDescription",
+                    )}
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent className="max-w-md">
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    {t("library.skillsImport.marketplace.invalidKeyHint")}
                   </p>
                   <Button
                     type="button"

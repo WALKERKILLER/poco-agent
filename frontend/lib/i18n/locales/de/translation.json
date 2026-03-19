@@ -1216,7 +1216,10 @@
         "setupTitle": "SkillsMP verbinden und mehr Skills entdecken",
         "setupDescription": "SkillsMP ist ein Skill-Marketplace, in dem du wiederverwendbare Agent-Skills per Suche oder Popularitaet entdecken kannst.",
         "setupHint": "Fuege zuerst deinen SkillsMP API-Schluessel unter Einstellungen > Sonstiges hinzu und kehre dann hierher zurueck.",
-        "openSettings": "Einstellungen oeffnen"
+        "openSettings": "Einstellungen oeffnen",
+        "invalidKeyTitle": "Dein SkillsMP API-Schluessel ist ungueltig",
+        "invalidKeyDescription": "SkillsMP hat den aktuellen API-Schluessel abgelehnt. Deshalb sind Suche und Empfehlungen im Marketplace derzeit nicht verfuegbar.",
+        "invalidKeyHint": "Oeffne Einstellungen > Sonstiges, aktualisiere den SkillsMP API-Schluessel und versuche es danach hier erneut."
       }
     },
     "pluginsPage": {
