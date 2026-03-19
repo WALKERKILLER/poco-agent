@@ -17,6 +17,7 @@ import { PendingMessageList } from "./pending-message-list";
 import { ChatInput, type ChatInputRef } from "./chat-input";
 import { UserInputRequestCard } from "./user-input-request-card";
 import { PlanApprovalCard } from "./plan-approval-card";
+import { EnterPlanModeCard } from "./enter-plan-mode-card";
 import { SkillCreationReviewCard } from "./skill-creation-review-card";
 import {
   PanelHeader,
@@ -1170,6 +1171,14 @@ export function ChatPanel({
               }
               onReject={() =>
                 submitUserInputAnswer(activeUserInput.id, { approved: "false" })
+              }
+            />
+          ) : activeUserInput?.tool_name === "EnterPlanMode" ? (
+            <EnterPlanModeCard
+              request={activeUserInput}
+              isSubmitting={isSubmittingUserInput}
+              onConfirm={() =>
+                submitUserInputAnswer(activeUserInput.id, { confirmed: "true" })
               }
             />
           ) : activeUserInput || stickyUserInput ? (

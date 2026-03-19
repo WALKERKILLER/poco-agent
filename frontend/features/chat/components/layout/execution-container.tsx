@@ -141,8 +141,6 @@ export function ExecutionContainer({ sessionId }: ExecutionContainerProps) {
   const tabsSwitch = (
     <ExecutionTabsSwitch
       rightTab={rightTab}
-      isSessionActive={isSessionActive}
-      sessionStatus={session?.status}
       highlightId={executionTabsHighlightId}
       showArtifactsTab={showArtifactsTab}
       showComputerTab={showComputerTab}

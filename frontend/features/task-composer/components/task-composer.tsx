@@ -595,8 +595,6 @@ export function TaskComposer({
               canSubmit={canSubmit}
               hasVoiceSupport={voiceInput.isSupported}
               voiceStatus={voiceInput.status}
-              repoUrl={repoUrl}
-              repoDialogOpen={repoDialogOpen}
               browserEnabled={browserEnabled}
               onOpenRepoDialog={() => setRepoDialogOpen(true)}
               onBrowserEnabledChange={setBrowserEnabled}

@@ -43,8 +43,8 @@ PROVIDER_SPECS: tuple[ProviderSpec, ...] = (
         base_url_env_key="ANTHROPIC_BASE_URL",
         default_base_url="https://api.anthropic.com",
         known_models=(
-            ("claude-sonnet-4-20250514", "Claude Sonnet 4"),
-            ("claude-opus-4-20250514", "Claude Opus 4"),
+            ("claude-sonnet-4-6", "Claude Sonnet 4.6"),
+            ("claude-opus-4-6", "Claude Opus 4.6"),
         ),
     ),
     ProviderSpec(
@@ -54,7 +54,7 @@ PROVIDER_SPECS: tuple[ProviderSpec, ...] = (
         base_url_env_key="GLM_BASE_URL",
         default_base_url="https://open.bigmodel.cn/api/anthropic",
         known_models=(
-            ("GLM-4.7", "GLM-4.7"),
+            ("glm-4.7", "GLM-4.7"),
             ("glm-5", "GLM-5"),
         ),
     ),
@@ -64,10 +64,7 @@ PROVIDER_SPECS: tuple[ProviderSpec, ...] = (
         api_key_env_key="MINIMAX_API_KEY",
         base_url_env_key="MINIMAX_BASE_URL",
         default_base_url="https://api.minimaxi.com/anthropic",
-        known_models=(
-            ("MiniMax-M2.5", "MiniMax M2.5"),
-            ("MiniMax-M2", "MiniMax M2"),
-        ),
+        known_models=(("MiniMax-M2.5", "MiniMax M2.5"),),
     ),
     ProviderSpec(
         provider_id="deepseek",
@@ -352,6 +349,7 @@ class ModelConfigService:
             default_base_url=spec.default_base_url,
             effective_base_url=effective_base_url,
             base_url_source=base_url_source,
+            known_models=list(spec.known_models),
             models=selected_models,
         )
 

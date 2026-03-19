@@ -7,10 +7,12 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { PanelHeader } from "@/components/shared/panel-header";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ComputerPanel } from "@/features/chat/components/execution/computer-panel/computer-panel";
 import { ArtifactsPanel } from "@/features/chat/components/execution/file-panel/artifacts-panel";
 import type { ExecutionSession } from "@/features/chat/types";
+import { useT } from "@/lib/i18n/client";
 
 interface DesktopExecutionLayoutProps {
   sessionId: string;
@@ -39,6 +41,12 @@ export function DesktopExecutionLayout({
   tabsSwitch,
   browserEnabled,
 }: DesktopExecutionLayoutProps) {
+  const { t } = useT("translation");
+  const isComputerLive =
+    showComputerTab &&
+    rightTab === "computer" &&
+    (session?.status === "running" || session?.status === "pending");
+
   return (
     <div className="flex h-dvh min-h-0 min-w-0 overflow-hidden bg-background select-text">
       <ResizablePanelGroup direction="horizontal" className="min-h-0 min-w-0">
@@ -71,6 +79,28 @@ export function DesktopExecutionLayout({
                       <div className="flex min-w-0 items-center overflow-hidden">
                         {tabsSwitch}
                       </div>
+                    }
+                    action={
+                      isComputerLive ? (
+                        <Badge
+                          variant="outline"
+                          className="h-6 items-center gap-1.5 rounded-full border-primary/15 bg-primary/10 px-2.5 text-[11px] font-semibold text-primary"
+                          aria-label={t("computer.status.live")}
+                          title={t("computer.status.live")}
+                        >
+                          <span className="relative flex size-2 shrink-0">
+                            <span
+                              aria-hidden
+                              className="absolute inset-0 rounded-full bg-primary/25 motion-safe:animate-ping"
+                            />
+                            <span
+                              aria-hidden
+                              className="relative size-2 rounded-full bg-primary"
+                            />
+                          </span>
+                          <span>{t("computer.replay.liveLabel")}</span>
+                        </Badge>
+                      ) : undefined
                     }
                   />
                   <div className="flex-1 min-h-0 overflow-hidden">
