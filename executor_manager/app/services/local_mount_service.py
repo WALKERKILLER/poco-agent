@@ -1,6 +1,6 @@
 import logging
 import re
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any, Protocol
 
 from app.core.errors.error_codes import ErrorCode
@@ -33,6 +33,19 @@ _FORBIDDEN_ROOTS = {
     "/usr",
     "/var",
 }
+_CLOUD_HELPER_MESSAGES = {
+    "not_running": (
+        "Cloud local mounts require the local helper to be running before execution."
+    ),
+    "permission_denied": (
+        "Cloud local mounts are blocked because the local helper does not have "
+        "permission to expose the selected directories."
+    ),
+    "bridge_unreachable": (
+        "Cloud local mounts are unavailable because the bridge host cannot reach "
+        "the local helper."
+    ),
+}
 
 
 class MountProvider(Protocol):
@@ -40,7 +53,11 @@ class MountProvider(Protocol):
 
     provider_type: MountProviderType
 
-    def resolve(self, mounts: list[LocalMountConfig]) -> list[ResolvedLocalMount]:
+    def resolve(
+        self,
+        mounts: list[LocalMountConfig],
+        session_id: str | None = None,
+    ) -> list[ResolvedLocalMount]:
         """Resolve user-visible local mounts into host/container bind targets."""
 
 
@@ -49,12 +66,16 @@ class DirectBindMountProvider:
 
     provider_type: MountProviderType = "direct_bind"
 
-    def resolve(self, mounts: list[LocalMountConfig]) -> list[ResolvedLocalMount]:
+    def resolve(
+        self,
+        mounts: list[LocalMountConfig],
+        session_id: str | None = None,
+    ) -> list[ResolvedLocalMount]:
         seen_ids: set[str] = set()
         seen_paths: set[str] = set()
         resolved: list[ResolvedLocalMount] = []
         for mount in mounts:
-            mount_id = self._normalize_mount_id(mount.id)
+            mount_id = _normalize_mount_id(mount.id)
             if mount_id in seen_ids:
                 raise AppException(
                     error_code=ErrorCode.BAD_REQUEST,
@@ -62,7 +83,7 @@ class DirectBindMountProvider:
                 )
             seen_ids.add(mount_id)
 
-            normalized_path = self._normalize_host_path(mount.host_path)
+            normalized_path = _normalize_existing_directory_path(mount.host_path)
             if normalized_path in seen_paths:
                 raise AppException(
                     error_code=ErrorCode.BAD_REQUEST,
@@ -82,63 +103,111 @@ class DirectBindMountProvider:
 
         return resolved
 
-    @staticmethod
-    def _normalize_mount_id(value: str) -> str:
-        mount_id = value.strip()
-        if not _MOUNT_ID_PATTERN.fullmatch(mount_id):
-            raise AppException(
-                error_code=ErrorCode.BAD_REQUEST,
-                message=(
-                    "local_mount id must match [A-Za-z0-9._-] and cannot contain "
-                    "path separators"
-                ),
-            )
-        return mount_id
-
-    @staticmethod
-    def _normalize_host_path(value: str) -> str:
-        raw = value.strip()
-        path = Path(raw)
-        if not path.is_absolute():
-            raise AppException(
-                error_code=ErrorCode.BAD_REQUEST,
-                message=f"Local mount path must be absolute: {raw}",
-            )
-
-        normalized = path.resolve(strict=False)
-        normalized_text = str(normalized)
-        if normalized_text in _FORBIDDEN_ROOTS:
-            raise AppException(
-                error_code=ErrorCode.BAD_REQUEST,
-                message=f"Refusing to mount restricted directory: {normalized_text}",
-            )
-        if not normalized.exists():
-            raise AppException(
-                error_code=ErrorCode.BAD_REQUEST,
-                message=f"Local mount path does not exist: {normalized_text}",
-            )
-        if not normalized.is_dir():
-            raise AppException(
-                error_code=ErrorCode.BAD_REQUEST,
-                message=f"Local mount path must be a directory: {normalized_text}",
-            )
-        return normalized_text
-
 
 class BridgeLiveMountProvider:
     """Cloud deployment provider placeholder for bridge-mounted user folders."""
 
     provider_type: MountProviderType = "bridge_live_mount"
 
-    def resolve(self, mounts: list[LocalMountConfig]) -> list[ResolvedLocalMount]:
+    def __init__(self, settings: Settings) -> None:
+        self.settings = settings
+
+    def resolve(
+        self,
+        mounts: list[LocalMountConfig],
+        session_id: str | None = None,
+    ) -> list[ResolvedLocalMount]:
         if not mounts:
             return []
-        raise AppException(
-            error_code=ErrorCode.BAD_REQUEST,
-            message=(
-                "Cloud local mounts are not available yet. "
-                "bridge_live_mount will be added in a later phase."
-            ),
+
+        if not session_id:
+            raise AppException(
+                error_code=ErrorCode.BAD_REQUEST,
+                message="Cloud local mounts require a session id for bridge planning",
+            )
+
+        helper_status = self._resolve_helper_status()
+        if helper_status != "available":
+            raise AppException(
+                error_code=ErrorCode.BAD_REQUEST,
+                message=self._helper_status_message(helper_status),
+            )
+
+        bridge_root = Path(self.settings.local_mount_bridge_root).resolve(strict=False)
+        seen_ids: set[str] = set()
+        seen_paths: set[str] = set()
+        resolved: list[ResolvedLocalMount] = []
+        for mount in mounts:
+            mount_id = _normalize_mount_id(mount.id)
+            if mount_id in seen_ids:
+                raise AppException(
+                    error_code=ErrorCode.BAD_REQUEST,
+                    message=f"Duplicate local mount id: {mount_id}",
+                )
+            seen_ids.add(mount_id)
+
+            normalized_host_path = _normalize_cloud_host_path(mount.host_path)
+            normalized_host_path_key = normalized_host_path.casefold()
+            if normalized_host_path_key in seen_paths:
+                raise AppException(
+                    error_code=ErrorCode.BAD_REQUEST,
+                    message=f"Duplicate local mount path: {normalized_host_path}",
+                )
+            seen_paths.add(normalized_host_path_key)
+
+            source_path = (bridge_root / session_id / mount_id).resolve(strict=False)
+            source_path_text = str(source_path)
+            if not source_path.exists():
+                raise AppException(
+                    error_code=ErrorCode.BAD_REQUEST,
+                    message=(
+                        "Cloud local mount bridge is ready but the host mount point "
+                        f"is missing: {source_path_text}. Start the local helper and "
+                        "bridge mount agent, then retry."
+                    ),
+                )
+            if not source_path.is_dir():
+                raise AppException(
+                    error_code=ErrorCode.BAD_REQUEST,
+                    message=(
+                        "Cloud local mount bridge produced a non-directory mount "
+                        f"point: {source_path_text}"
+                    ),
+                )
+            resolved.append(
+                ResolvedLocalMount(
+                    id=mount_id,
+                    name=mount.name.strip(),
+                    source_path=source_path_text,
+                    container_path=f"/mnt/local/{mount_id}",
+                    access_mode=mount.access_mode,
+                    provider_type=self.provider_type,
+                )
+            )
+
+        logger.info(
+            "mount_bridge_plan",
+            extra={
+                "session_id": session_id,
+                "bridge_root": str(bridge_root),
+                "mount_count": len(resolved),
+            },
+        )
+        return resolved
+
+    def _resolve_helper_status(self) -> str:
+        configured_status = self.settings.local_mount_helper_status
+        if configured_status is not None:
+            return configured_status
+        return "bridge_unreachable"
+
+    def _helper_status_message(self, helper_status: str) -> str:
+        custom_message = (self.settings.local_mount_helper_message or "").strip()
+        if custom_message:
+            return custom_message
+        return _CLOUD_HELPER_MESSAGES.get(
+            helper_status,
+            "Cloud local mounts are not available right now.",
         )
 
 
@@ -149,10 +218,14 @@ class LocalMountService:
         self.settings = settings or get_settings()
         self._providers: dict[str, MountProvider] = {
             "local": DirectBindMountProvider(),
-            "cloud": BridgeLiveMountProvider(),
+            "cloud": BridgeLiveMountProvider(self.settings),
         }
 
-    def resolve(self, config: dict[str, Any] | None) -> MountResolutionResult:
+    def resolve(
+        self,
+        config: dict[str, Any] | None,
+        session_id: str | None = None,
+    ) -> MountResolutionResult:
         normalized_config = dict(config or {})
         filesystem_mode = self._normalize_filesystem_mode(
             normalized_config.get("filesystem_mode")
@@ -170,7 +243,7 @@ class LocalMountService:
                 message="filesystem_mode=local_mount requires at least one local mount",
             )
 
-        resolved_mounts = provider.resolve(mounts)
+        resolved_mounts = provider.resolve(mounts, session_id=session_id)
         fingerprint = build_mount_fingerprint(
             [
                 MountFingerprintMaterial(
@@ -202,9 +275,10 @@ class LocalMountService:
     def build_runtime_config(
         self,
         config: dict[str, Any] | None,
+        session_id: str | None = None,
     ) -> tuple[dict[str, Any], MountResolutionResult]:
         normalized = dict(config or {})
-        resolution = self.resolve(normalized)
+        resolution = self.resolve(normalized, session_id=session_id)
         filesystem_mode = self._normalize_filesystem_mode(
             normalized.get("filesystem_mode")
         )
@@ -240,3 +314,56 @@ class LocalMountService:
                     message=f"Invalid local_mounts entry: {exc}",
                 ) from exc
         return mounts
+
+
+def _normalize_mount_id(value: str) -> str:
+    mount_id = value.strip()
+    if not _MOUNT_ID_PATTERN.fullmatch(mount_id):
+        raise AppException(
+            error_code=ErrorCode.BAD_REQUEST,
+            message=(
+                "local_mount id must match [A-Za-z0-9._-] and cannot contain "
+                "path separators"
+            ),
+        )
+    return mount_id
+
+
+def _normalize_existing_directory_path(value: str) -> str:
+    raw = value.strip()
+    path = Path(raw)
+    if not path.is_absolute():
+        raise AppException(
+            error_code=ErrorCode.BAD_REQUEST,
+            message=f"Local mount path must be absolute: {raw}",
+        )
+
+    normalized = path.resolve(strict=False)
+    normalized_text = str(normalized)
+    if normalized_text in _FORBIDDEN_ROOTS:
+        raise AppException(
+            error_code=ErrorCode.BAD_REQUEST,
+            message=f"Refusing to mount restricted directory: {normalized_text}",
+        )
+    if not normalized.exists():
+        raise AppException(
+            error_code=ErrorCode.BAD_REQUEST,
+            message=f"Local mount path does not exist: {normalized_text}",
+        )
+    if not normalized.is_dir():
+        raise AppException(
+            error_code=ErrorCode.BAD_REQUEST,
+            message=f"Local mount path must be a directory: {normalized_text}",
+        )
+    return normalized_text
+
+
+def _normalize_cloud_host_path(value: str) -> str:
+    raw = value.strip()
+    looks_absolute = raw.startswith("/") or PureWindowsPath(raw).is_absolute()
+    if not looks_absolute:
+        raise AppException(
+            error_code=ErrorCode.BAD_REQUEST,
+            message=f"Cloud local mount path must be absolute: {raw}",
+        )
+    return raw

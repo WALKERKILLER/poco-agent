@@ -54,7 +54,10 @@ class ContainerPool:
             (executor_url, container_id)
         """
         overall_started = time.perf_counter()
-        _, mount_resolution = self.local_mount_service.build_runtime_config(task_config)
+        _, mount_resolution = self.local_mount_service.build_runtime_config(
+            task_config,
+            session_id=session_id,
+        )
         filesystem_mode = (
             "local_mount" if mount_resolution.resolved_mounts else "sandbox"
         )
@@ -597,6 +600,11 @@ class ContainerPool:
             if container_mode == "ephemeral":
                 logger.info(f"Container {container_id} is ephemeral, stopping")
                 try:
+                    self._log_mount_release(
+                        container,
+                        reason="task_complete",
+                        session_id=session_id,
+                    )
                     container.stop(timeout=10)
                 except Exception as e:
                     logger.error(f"Failed to stop container {container_id}: {e}")
@@ -622,6 +630,7 @@ class ContainerPool:
             return
 
         try:
+            self._log_mount_release(container, reason="delete_container")
             container.stop(timeout=10)
         except Exception as e:
             logger.error(f"Failed to stop container {cid}: {e}")
@@ -702,6 +711,11 @@ class ContainerPool:
             labels = getattr(container, "labels", None) or {}
             logical_id = labels.get("container_id")
             try:
+                self._log_mount_release(
+                    container,
+                    reason="cancel_task",
+                    session_id=session_id,
+                )
                 container.stop(timeout=10)
                 logger.info(
                     "container_stopped",
@@ -737,6 +751,26 @@ class ContainerPool:
                 ]
                 for sid in bound_sessions:
                     self.session_to_container.pop(sid, None)
+
+    @staticmethod
+    def _log_mount_release(
+        container: "Container",
+        *,
+        reason: str,
+        session_id: str | None = None,
+    ) -> None:
+        labels = getattr(container, "labels", None) or {}
+        logger.info(
+            "mount_release",
+            extra={
+                "reason": reason,
+                "session_id": session_id or labels.get("session_id"),
+                "container_id": labels.get("container_id"),
+                "deployment_mode": labels.get("deployment_mode"),
+                "provider_type": labels.get("mount_provider_type"),
+                "mount_fingerprint": labels.get("mount_fingerprint"),
+            },
+        )
 
     def get_container_stats(self) -> dict[str, int | list[dict]]:
         """Get container statistics."""

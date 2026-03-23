@@ -151,7 +151,8 @@ class TaskDispatcher:
                 task_id=task_id,
             )
             resolved_config, _ = local_mount_service.build_runtime_config(
-                resolved_config
+                resolved_config,
+                session_id=session_id,
             )
             logger.info(
                 "timing",

@@ -29,6 +29,19 @@ class Settings(BaseSettings):
     deployment_mode: Literal["local", "cloud"] = Field(
         default="local", alias="DEPLOYMENT_MODE"
     )
+    local_mount_bridge_root: str = Field(
+        default="/var/lib/poco/local-mounts",
+        alias="LOCAL_MOUNT_BRIDGE_ROOT",
+    )
+    local_mount_helper_status: Literal[
+        "available",
+        "not_running",
+        "permission_denied",
+        "bridge_unreachable",
+    ] | None = Field(default=None, alias="LOCAL_MOUNT_HELPER_STATUS")
+    local_mount_helper_message: str | None = Field(
+        default=None, alias="LOCAL_MOUNT_HELPER_MESSAGE"
+    )
     internal_api_token: str = Field(
         default="change-this-token-in-production", alias="INTERNAL_API_TOKEN"
     )
