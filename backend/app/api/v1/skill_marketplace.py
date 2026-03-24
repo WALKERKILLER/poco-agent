@@ -11,7 +11,7 @@ from app.schemas.skill_marketplace import (
     SkillsMpRecommendationsResponse,
     SkillsMpSearchResponse,
 )
-from app.services.marketplace import SkillsMpService
+from app.services.skillsmp_service import SkillsMpService
 from app.services.skill_import_service import SkillImportService
 
 router = APIRouter(prefix="/skills/marketplace", tags=["skills"])
