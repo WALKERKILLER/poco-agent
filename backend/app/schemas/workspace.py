@@ -2,10 +2,9 @@ from typing import Any, Literal
 
 from app.schemas.filesystem import LocalMountAccessMode
 
+from pydantic import BaseModel
 
 FileSource = Literal["workspace", "local_mount"]
-
-from pydantic import BaseModel
 
 
 class FileNode(BaseModel):

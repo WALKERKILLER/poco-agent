@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.core.settings import Settings, get_settings
+from app.core.settings import get_settings
 from app.schemas.filesystem import LocalFilesystemSupport
 from app.schemas.response import Response
 
