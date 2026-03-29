@@ -1,7 +1,7 @@
 import tempfile
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 from app.core.errors.exceptions import AppException
 from app.core.settings import Settings
@@ -39,13 +39,12 @@ class LocalMountServicePhaseOneTests(unittest.TestCase):
 
     def test_container_reuse_mismatch_ignores_deployment_mode(self) -> None:
         pool = ContainerPool.__new__(ContainerPool)
-        container = SimpleNamespace(
-            labels={
-                "filesystem_mode": "local_mount",
-                "deployment_mode": "cloud",
-                "mount_fingerprint": "same-fingerprint",
-            }
-        )
+        container = MagicMock()
+        container.labels = {
+            "filesystem_mode": "local_mount",
+            "deployment_mode": "cloud",
+            "mount_fingerprint": "same-fingerprint",
+        }
 
         reasons = pool._get_reuse_mismatch_reasons(
             container=container,

@@ -273,7 +273,11 @@ class TaskDispatcher:
 
             step_started = time.perf_counter()
             browser_enabled = bool(resolved_config.get("browser_enabled"))
-            executor_url, container_id, _ = await TaskDispatcher.resolve_executor_target(
+            (
+                executor_url,
+                container_id,
+                _,
+            ) = await TaskDispatcher.resolve_executor_target(
                 session_id=session_id,
                 user_id=user_id,
                 task_config=resolved_config,

@@ -65,9 +65,9 @@ def build_workspace_file_nodes(
                 mimeType=mime_type,
                 oss_status=oss_status,
                 oss_meta=oss_meta,
-                source=str(source),
-                mount_id=str(mount_id) if mount_id is not None else None,
-                access_mode=str(access_mode) if access_mode is not None else None,
+                source=source,
+                mount_id=mount_id,
+                access_mode=access_mode,
             )
         )
 

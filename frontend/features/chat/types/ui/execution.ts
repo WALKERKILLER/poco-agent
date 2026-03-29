@@ -3,10 +3,7 @@
  */
 
 import type { ApiStatePatch } from "../api/callback";
-import type {
-  FilesystemMode,
-  LocalMountConfig,
-} from "../api/session";
+import type { FilesystemMode, LocalMountConfig } from "../api/session";
 
 export type ExecutionStatus =
   | "pending"

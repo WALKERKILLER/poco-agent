@@ -6,7 +6,7 @@ from pathlib import Path
 from app.core.errors.error_codes import ErrorCode
 from app.core.errors.exceptions import AppException
 from app.models.agent_session import AgentSession
-from app.schemas.filesystem import LocalMountConfig
+from app.schemas.filesystem import LocalMountAccessMode, LocalMountConfig
 from app.schemas.session import TaskConfig
 from app.schemas.workspace import FileNode
 
@@ -213,7 +213,7 @@ class LocalMountBrowserService:
         root_path: Path,
         current: Path,
         mount_id: str,
-        access_mode: str,
+        access_mode: LocalMountAccessMode,
         max_depth: int,
         max_entries: int,
         counter: dict[str, int],

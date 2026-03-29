@@ -41,9 +41,9 @@ Host machine                     Container
 
 Local directory mounting is controlled by the `DEPLOYMENT_MODE` environment variable:
 
-| Value | Behavior |
-|-------|----------|
-| `local` | Mounting is enabled (default) |
+| Value   | Behavior                       |
+| ------- | ------------------------------ |
+| `local` | Mounting is enabled (default)  |
 | `cloud` | Mounting is disabled in the UI |
 
 Set `DEPLOYMENT_MODE=cloud` in your backend configuration to disable this feature for cloud deployments. The interactive setup script (`scripts/quickstart.sh`) will prompt for this setting automatically.

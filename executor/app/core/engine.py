@@ -143,8 +143,7 @@ class AgentExecutor:
 
                 prompt = f"{prompt}\n\nPlease reply in the same language as the user's input unless explicitly requested otherwise."
                 prompt = (
-                    f"{prompt}\n\n"
-                    f"{self._build_workspace_scope_hint(ctx.cwd, config)}"
+                    f"{prompt}\n\n{self._build_workspace_scope_hint(ctx.cwd, config)}"
                 )
 
             async def dummy_hook(
@@ -330,7 +329,7 @@ class AgentExecutor:
                 )
                 options = ClaudeAgentOptions(
                     cwd=ctx.cwd,
-                    add_dirs=extra_allowed_dirs,
+                    add_dirs=[str(d) for d in extra_allowed_dirs],
                     resume=self.sdk_session_id,
                     # Load both user-level (~/.claude) and project-level (.claude) settings.
                     # Skills are staged into user-level ~/.claude/skills (symlinked to /workspace/.claude_data).
@@ -447,9 +446,7 @@ class AgentExecutor:
                 cfg = configured_mounts.get(mount.id)
                 if cfg:
                     host_path = cfg.host_path
-                dir_name = (
-                    Path(host_path).name if host_path else mount.name
-                )
+                dir_name = Path(host_path).name if host_path else mount.name
                 resolution_lines.append(
                     f'  "{dir_name}" or "{mount.name}"'
                     + (f' or "{host_path}"' if host_path else "")
