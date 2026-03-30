@@ -39,6 +39,9 @@ function buildTaskConfig(
       config.git_token_env_key = gitTokenEnvKey;
     }
   }
+  if (typeof options.preset_id === "number") {
+    config.preset_id = options.preset_id;
+  }
   if (options.browser_enabled) {
     config.browser_enabled = true;
   }

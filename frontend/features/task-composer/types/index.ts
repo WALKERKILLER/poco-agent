@@ -21,6 +21,7 @@ export interface TaskSendOptions {
   git_token_env_key?: string | null;
   repo_usage?: RepoUsageMode | null;
   project_name?: string | null;
+  preset_id?: number | null;
   browser_enabled?: boolean | null;
   memory_enabled?: boolean | null;
   mcp_config?: Record<string, boolean> | null;

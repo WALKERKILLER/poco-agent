@@ -15,6 +15,8 @@ import { ComposerToolbar } from "@/features/task-composer/components/composer-to
 import { LocalFilesystemDialog } from "@/features/task-composer/components/local-filesystem-dialog";
 import { RepoDialog } from "@/features/task-composer/components/repo-dialog";
 import { SlashAutocompleteDropdown } from "@/features/task-composer/components/slash-autocomplete-dropdown";
+import { PresetSelect } from "@/features/capabilities/presets";
+import { presetsService } from "@/features/capabilities/presets/api/presets-api";
 import { useCapabilityRecommendations } from "@/features/task-composer/hooks/use-capability-recommendations";
 import { getNextComposerMode } from "@/features/task-composer/lib/mode-utils";
 import { useSlashCommandAutocomplete } from "@/features/chat/hooks/use-slash-command-autocomplete";
@@ -33,6 +35,7 @@ import type {
   TaskSendOptions,
 } from "@/features/task-composer/types";
 import type { CapabilityRecommendation } from "@/features/task-composer/types/capability-recommendation";
+import type { Preset } from "@/features/capabilities/presets/lib/preset-types";
 
 interface TrackedCapabilityItem {
   item: CapabilityRecommendation;
@@ -166,6 +169,10 @@ export function TaskComposer({
   const [trackedCapabilityItems, setTrackedCapabilityItems] = React.useState<
     TrackedCapabilityItem[]
   >([]);
+  const [presets, setPresets] = React.useState<Preset[]>([]);
+  const [selectedPresetId, setSelectedPresetId] = React.useState<number | null>(
+    null,
+  );
 
   const effectiveMcpConfig = React.useMemo(
     () => toCapabilityToggleConfig(capabilityToggle?.mcpEnabledMap),
@@ -176,6 +183,25 @@ export function TaskComposer({
     () => toCapabilityToggleConfig(capabilityToggle?.skillEnabledMap),
     [capabilityToggle],
   );
+
+  React.useEffect(() => {
+    let active = true;
+
+    const loadPresets = async () => {
+      try {
+        const data = await presetsService.listPresets({ revalidate: 0 });
+        if (!active) return;
+        setPresets(data);
+      } catch (error) {
+        console.error("[TaskComposer] Failed to load presets", error);
+      }
+    };
+
+    void loadPresets();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // ---- Repo state ----
   const [repoDialogOpen, setRepoDialogOpen] = React.useState(false);
@@ -344,6 +370,7 @@ export function TaskComposer({
         allowProjectize && repoUsage === "create_project"
           ? projectName.trim() || null
           : null,
+      preset_id: selectedPresetId,
       browser_enabled: browserEnabled,
       memory_enabled: memoryFeatureEnabled ? memoryEnabled : false,
       mcp_config:
@@ -399,6 +426,7 @@ export function TaskComposer({
     projectName,
     repoUrl,
     repoUsage,
+    selectedPresetId,
     runScheduleMode,
     runScheduledAt,
     runTimezone,
@@ -565,6 +593,16 @@ export function TaskComposer({
 
         {/* Textarea with slash autocomplete */}
         <div className="relative px-4 pb-3 pt-4">
+          {presets.length > 0 ? (
+            <div className="mb-3 flex justify-end">
+              <PresetSelect
+                presets={presets}
+                value={selectedPresetId}
+                onChange={setSelectedPresetId}
+                disabled={Boolean(isSubmitting)}
+              />
+            </div>
+          ) : null}
           <SlashAutocompleteDropdown
             isOpen={slashAutocomplete.isOpen}
             suggestions={slashAutocomplete.suggestions}

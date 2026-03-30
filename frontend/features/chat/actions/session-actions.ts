@@ -28,6 +28,7 @@ const configSchema = z
     repo_url: z.string().optional().nullable(),
     git_branch: z.string().optional(),
     git_token_env_key: z.string().optional().nullable(),
+    preset_id: z.number().int().optional().nullable(),
     model: z.string().optional().nullable(),
     model_provider_id: z.string().optional().nullable(),
     browser_enabled: z.boolean().optional(),
@@ -36,6 +37,20 @@ const configSchema = z
     skill_config: z.record(z.string(), z.boolean()).optional(),
     plugin_config: z.record(z.string(), z.boolean()).optional(),
     subagent_ids: z.array(z.number().int()).optional(),
+    subagent_configs: z
+      .array(
+        z.object({
+          name: z.string().trim().min(1),
+          description: z.string().optional().nullable(),
+          prompt: z.string().optional().nullable(),
+          model: z
+            .enum(["sonnet", "opus", "haiku", "inherit"])
+            .optional()
+            .nullable(),
+          tools: z.array(z.string()).optional().nullable(),
+        }),
+      )
+      .optional(),
     filesystem_mode: z.enum(["sandbox", "local_mount"]).optional(),
     local_mounts: z
       .array(
