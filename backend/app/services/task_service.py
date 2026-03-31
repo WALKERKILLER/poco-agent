@@ -6,13 +6,16 @@ from sqlalchemy.orm import Session
 from app.core.settings import get_settings
 from app.core.errors.error_codes import ErrorCode
 from app.core.errors.exceptions import AppException
+from app.models.project_file import ProjectFile
 from app.repositories.project_repository import ProjectRepository
+from app.repositories.project_file_repository import ProjectFileRepository
 from app.repositories.run_repository import RunRepository
 from app.repositories.session_repository import SessionRepository
 from app.repositories.sub_agent_repository import SubAgentRepository
 from app.repositories.user_mcp_install_repository import UserMcpInstallRepository
 from app.repositories.user_plugin_install_repository import UserPluginInstallRepository
 from app.repositories.user_skill_install_repository import UserSkillInstallRepository
+from app.schemas.input_file import InputFile
 from app.schemas.session import TaskConfig
 from app.schemas.task import TaskEnqueueRequest, TaskEnqueueResponse
 from app.services.model_config_service import (
@@ -182,6 +185,51 @@ class TaskService:
 
         return updated
 
+    @staticmethod
+    def _project_file_to_input_file(project_file: ProjectFile) -> InputFile:
+        return InputFile(
+            id=None,
+            type="file",
+            name=project_file.file_name,
+            source=project_file.file_source,
+            size=project_file.file_size,
+            content_type=project_file.file_content_type,
+            path=None,
+        )
+
+    @classmethod
+    def _merge_input_files(
+        cls,
+        project_files: list[InputFile],
+        user_files: list[InputFile] | None,
+    ) -> list[InputFile]:
+        merged: list[InputFile] = []
+        seen_sources: set[str] = set()
+
+        for input_file in project_files:
+            source = (input_file.source or "").strip()
+            if not source or source in seen_sources:
+                continue
+            merged.append(input_file)
+            seen_sources.add(source)
+
+        for input_file in user_files or []:
+            source = (input_file.source or "").strip()
+            if not source or source in seen_sources:
+                continue
+            merged.append(input_file)
+            seen_sources.add(source)
+
+        return merged
+
+    def _build_project_input_files(self, db: Session, project) -> list[InputFile]:
+        if not project:
+            return []
+        return [
+            self._project_file_to_input_file(project_file)
+            for project_file in ProjectFileRepository.list_by_project(db, project.id)
+        ]
+
     def _normalize_scheduled_at(
         self, scheduled_at: datetime, timezone_name: str | None
     ) -> datetime:
@@ -342,9 +390,13 @@ class TaskService:
             db.flush()
 
         run_config_snapshot = dict(merged_config or {})
-        if request.config is not None and request.config.input_files:
+        merged_input_files = self._merge_input_files(
+            self._build_project_input_files(db, project),
+            request.config.input_files if request.config is not None else None,
+        )
+        if merged_input_files:
             run_config_snapshot["input_files"] = [
-                f.model_dump(mode="json") for f in request.config.input_files
+                f.model_dump(mode="json") for f in merged_input_files
             ]
         run_config_snapshot = run_config_snapshot or None
 

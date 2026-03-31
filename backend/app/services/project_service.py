@@ -1,3 +1,4 @@
+import logging
 from urllib.parse import urlparse
 from uuid import UUID
 
@@ -6,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.errors.error_codes import ErrorCode
 from app.core.errors.exceptions import AppException
 from app.models.project import Project
+from app.repositories.project_file_repository import ProjectFileRepository
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.session_repository import SessionRepository
 from app.schemas.project import (
@@ -13,11 +15,16 @@ from app.schemas.project import (
     ProjectResponse,
     ProjectUpdateRequest,
 )
+from app.services.storage_service import S3StorageService
 
 _GITHUB_HOSTS = {"github.com", "www.github.com"}
+logger = logging.getLogger(__name__)
 
 
 class ProjectService:
+    def __init__(self, storage_service: S3StorageService | None = None) -> None:
+        self.storage_service = storage_service
+
     @staticmethod
     def _normalize_optional_str(value: str | None) -> str | None:
         clean = (value or "").strip()
@@ -177,6 +184,32 @@ class ProjectService:
                 error_code=ErrorCode.PROJECT_NOT_FOUND,
                 message=f"Project not found: {project_id}",
             )
+
+        project_files = ProjectFileRepository.list_by_project(db, project_id)
+        if project_files:
+            storage_service = self.storage_service
+            if storage_service is None:
+                try:
+                    storage_service = S3StorageService()
+                except AppException as exc:
+                    logger.warning(
+                        "Skipping project file cleanup for project %s: %s",
+                        project_id,
+                        exc.message,
+                    )
+                    storage_service = None
+
+            if storage_service is not None:
+                for project_file in project_files:
+                    try:
+                        storage_service.delete_object(key=project_file.file_source)
+                    except AppException as exc:
+                        logger.warning(
+                            "Failed to delete project file object %s for project %s: %s",
+                            project_file.file_source,
+                            project_id,
+                            exc.message,
+                        )
 
         project.is_deleted = True
         SessionRepository.clear_project_id(db, project_id)
