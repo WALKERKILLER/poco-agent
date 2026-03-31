@@ -1545,6 +1545,25 @@
       "infoDrawer": {
         "title": "Project Info"
       },
+      "files": {
+        "title": "Project files",
+        "description": "Files attached to {{name}} are available in every run for this project.",
+        "uploadTitle": "Upload files",
+        "uploadDescription": "Attach documents, notes, or snippets to keep project context close at hand.",
+        "uploadButton": "Add files",
+        "loading": "Loading project files...",
+        "emptyTitle": "No project files yet",
+        "emptyDescription": "Add files here so every run in this project can use them as context.",
+        "count": "{{count}} files",
+        "unknownSize": "Unknown size",
+        "toasts": {
+          "loadFailed": "Failed to load project files",
+          "added": "{{name}} added to project files",
+          "addFailed": "Failed to add file to project",
+          "removed": "{{name}} removed from project files",
+          "removeFailed": "Failed to remove project file"
+        }
+      },
       "notFoundTitle": "Project not found",
       "notFoundDescription": "This project is unavailable or you no longer have access to it.",
       "backHome": "Back to home",
@@ -1570,6 +1589,10 @@
         "rename": {
           "title": "Edit project",
           "description": "Update the project name without leaving the detail view."
+        },
+        "files": {
+          "title": "Project files",
+          "description": "Upload files that every run in this project can use."
         },
         "docs": {
           "title": "Project docs",

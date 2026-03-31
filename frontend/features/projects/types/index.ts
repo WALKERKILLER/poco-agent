@@ -17,6 +17,18 @@ export interface ProjectItem {
   updatedAt?: string;
 }
 
+export interface ProjectFile {
+  id: number;
+  projectId: string;
+  fileName: string;
+  fileSource: string;
+  fileSize?: number | null;
+  fileContentType?: string | null;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface TaskHistoryItem {
   id: string;
   title: string;

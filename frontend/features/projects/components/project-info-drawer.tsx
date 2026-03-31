@@ -26,6 +26,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { RenameProjectDialog } from "@/features/projects/components/rename-project-dialog";
+import { ProjectFilesDialog } from "@/features/projects/components/project-files-dialog";
+import { projectFilesService } from "@/features/projects/api/project-files-api";
 import type { ProjectItem } from "@/features/projects/types";
 import { useLanguage } from "@/hooks/use-language";
 import { useT } from "@/lib/i18n/client";
@@ -38,6 +40,14 @@ interface ProjectInfoDrawerProps {
   onUpdateProject: (updates: Partial<ProjectItem>) => Promise<void>;
   onOpenSettings: () => void;
   onDeleteProject?: () => Promise<void> | void;
+}
+
+interface QuickActionItem {
+  key: string;
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  onClick?: () => void;
+  badge?: number;
 }
 
 function formatUpdatedAt(updatedAt: string | undefined, locale: string) {
@@ -61,6 +71,8 @@ export function ProjectInfoDrawer({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isEditingDescription, setIsEditingDescription] = React.useState(false);
+  const [isFilesDialogOpen, setIsFilesDialogOpen] = React.useState(false);
+  const [projectFilesCount, setProjectFilesCount] = React.useState(0);
   const [descriptionDraft, setDescriptionDraft] = React.useState(
     project.description ?? "",
   );
@@ -81,6 +93,27 @@ export function ProjectInfoDrawer({
     });
     return () => window.cancelAnimationFrame(frame);
   }, [isEditingDescription]);
+
+  React.useEffect(() => {
+    let active = true;
+
+    const loadProjectFilesCount = async () => {
+      try {
+        const items = await projectFilesService.list(project.id, {
+          revalidate: 0,
+        });
+        if (!active) return;
+        setProjectFilesCount(items.length);
+      } catch (error) {
+        console.error("[ProjectInfoDrawer] Failed to load project files", error);
+      }
+    };
+
+    void loadProjectFilesCount();
+    return () => {
+      active = false;
+    };
+  }, [project.id]);
 
   const summary = project.description?.trim() || "";
 
@@ -106,7 +139,7 @@ export function ProjectInfoDrawer({
     },
   ];
 
-  const quickActions = [
+  const quickActions: QuickActionItem[] = [
     {
       key: "presets",
       icon: Sparkles,
@@ -120,10 +153,11 @@ export function ProjectInfoDrawer({
       onClick: () => setIsRenameDialogOpen(true),
     },
     {
-      key: "docs",
+      key: "files",
       icon: Files,
-      title: t("project.detail.quickActions.docs.title"),
-      disabled: true,
+      title: t("project.detail.quickActions.files.title"),
+      onClick: () => setIsFilesDialogOpen(true),
+      badge: projectFilesCount,
     },
   ];
 
@@ -267,20 +301,17 @@ export function ProjectInfoDrawer({
                 <Button
                   key={action.key}
                   variant="ghost"
-                  className={cn(
-                    "h-9 w-full justify-start gap-2.5 px-2 text-sm",
-                    action.disabled && "pointer-events-none opacity-50",
-                  )}
+                  className={cn("h-9 w-full justify-start gap-2.5 px-2 text-sm")}
                   onClick={action.onClick}
                 >
                   <Icon className="size-4 text-primary" />
                   <span className="truncate">{action.title}</span>
-                  {action.disabled ? (
+                  {typeof action.badge === "number" ? (
                     <Badge
                       variant="outline"
                       className="ml-auto shrink-0 rounded-full border-border/70 bg-muted/40 px-1.5 py-0 text-[10px] text-muted-foreground"
                     >
-                      {t("project.detail.quickActions.soon")}
+                      {t("project.detail.files.count", { count: action.badge })}
                     </Badge>
                   ) : null}
                 </Button>
@@ -328,6 +359,14 @@ export function ProjectInfoDrawer({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ProjectFilesDialog
+        open={isFilesDialogOpen}
+        onOpenChange={setIsFilesDialogOpen}
+        projectId={project.id}
+        projectName={project.name}
+        onFilesChange={(items) => setProjectFilesCount(items.length)}
+      />
     </>
   );
 }

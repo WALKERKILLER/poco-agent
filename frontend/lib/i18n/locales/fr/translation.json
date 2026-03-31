@@ -1545,6 +1545,25 @@
       "infoDrawer": {
         "title": "Informations du projet"
       },
+      "files": {
+        "title": "Fichiers du projet",
+        "description": "Les fichiers ajoutés à {{name}} sont disponibles à chaque exécution de ce projet.",
+        "uploadTitle": "Téléverser des fichiers",
+        "uploadDescription": "Ajoutez des documents, notes ou extraits pour garder le contexte du projet à portée de main.",
+        "uploadButton": "Ajouter des fichiers",
+        "loading": "Chargement des fichiers du projet...",
+        "emptyTitle": "Aucun fichier de projet pour l'instant",
+        "emptyDescription": "Ajoutez des fichiers ici pour que chaque exécution de ce projet puisse les utiliser comme contexte.",
+        "count": "{{count}} fichiers",
+        "unknownSize": "Taille inconnue",
+        "toasts": {
+          "loadFailed": "Échec du chargement des fichiers du projet",
+          "added": "{{name}} ajouté aux fichiers du projet",
+          "addFailed": "Impossible d'ajouter le fichier au projet",
+          "removed": "{{name}} supprimé des fichiers du projet",
+          "removeFailed": "Impossible de supprimer le fichier du projet"
+        }
+      },
       "notFoundTitle": "Projet introuvable",
       "notFoundDescription": "Ce projet n’est pas disponible ou vous n’y avez plus accès.",
       "backHome": "Retour à l’accueil",
@@ -1570,6 +1589,10 @@
         "rename": {
           "title": "Modifier le projet",
           "description": "Mettez à jour le nom du projet sans quitter la vue détaillée."
+        },
+        "files": {
+          "title": "Fichiers du projet",
+          "description": "Téléversez les fichiers que chaque exécution de ce projet peut utiliser."
         },
         "docs": {
           "title": "Documentation du projet",

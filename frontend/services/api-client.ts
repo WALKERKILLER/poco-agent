@@ -182,6 +182,9 @@ export const API_ENDPOINTS = {
   // Projects
   projects: "/projects",
   project: (projectId: string) => `/projects/${projectId}`,
+  projectFiles: (projectId: string) => `/projects/${projectId}/files`,
+  projectFile: (projectId: string, fileId: number) =>
+    `/projects/${projectId}/files/${fileId}`,
   projectPresets: (projectId: string) => `/projects/${projectId}/presets`,
   projectPreset: (projectId: string, presetId: number) =>
     `/projects/${projectId}/presets/${presetId}`,

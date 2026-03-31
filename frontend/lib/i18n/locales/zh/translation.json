@@ -1545,6 +1545,25 @@
       "infoDrawer": {
         "title": "项目信息"
       },
+      "files": {
+        "title": "项目文件",
+        "description": "附加到 {{name}} 的文件会在这个项目的每次运行中可用。",
+        "uploadTitle": "上传文件",
+        "uploadDescription": "附加文档、笔记或片段，让项目上下文始终可用。",
+        "uploadButton": "添加文件",
+        "loading": "正在加载项目文件...",
+        "emptyTitle": "还没有项目文件",
+        "emptyDescription": "在这里添加文件，让这个项目的每次运行都能直接使用它们。",
+        "count": "{{count}} 个文件",
+        "unknownSize": "未知大小",
+        "toasts": {
+          "loadFailed": "加载项目文件失败",
+          "added": "已将 {{name}} 添加到项目文件",
+          "addFailed": "向项目添加文件失败",
+          "removed": "已从项目文件中移除 {{name}}",
+          "removeFailed": "移除项目文件失败"
+        }
+      },
       "notFoundTitle": "项目不存在",
       "notFoundDescription": "这个项目不可用，或者你已经没有访问权限。",
       "backHome": "返回首页",
@@ -1570,6 +1589,10 @@
         "rename": {
           "title": "编辑项目",
           "description": "快速调整项目名称，保持侧边栏和详情一致。"
+        },
+        "files": {
+          "title": "项目文件",
+          "description": "上传这个项目每次运行都能使用的文件。"
         },
         "docs": {
           "title": "项目文档",

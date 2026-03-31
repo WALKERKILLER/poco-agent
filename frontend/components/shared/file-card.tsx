@@ -13,6 +13,7 @@ interface FileCardProps {
   onRemove?: () => void;
   className?: string;
   showRemove?: boolean;
+  unknownSizeLabel?: string;
 }
 
 const getFileIconType = (fileName: string, mimeType?: string | null) => {
@@ -50,12 +51,13 @@ export function FileCard({
   onRemove,
   className,
   showRemove = true,
+  unknownSizeLabel = "Unknown size",
 }: FileCardProps) {
   return (
     <BaseCard
       icon={<FileIcon file={file} />}
       title={file.name}
-      subtitle={formatFileSize(file.size)}
+      subtitle={file.size != null ? formatFileSize(file.size) : unknownSizeLabel}
       onRemove={onRemove}
       showRemove={showRemove}
       className={className}

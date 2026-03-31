@@ -3,13 +3,13 @@
 import * as React from "react";
 import { Files, PenSquare, Sparkles } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/client";
 
 interface ProjectQuickActionsProps {
   onOpenSettings: () => void;
   onRequestRename: () => void;
+  onOpenFiles: () => void;
 }
 
 interface ActionItem {
@@ -18,12 +18,12 @@ interface ActionItem {
   description: string;
   icon: React.ComponentType<{ className?: string }>;
   onClick?: () => void;
-  disabled?: boolean;
 }
 
 export function ProjectQuickActions({
   onOpenSettings,
   onRequestRename,
+  onOpenFiles,
 }: ProjectQuickActionsProps) {
   const { t } = useT("translation");
 
@@ -43,11 +43,11 @@ export function ProjectQuickActions({
       onClick: onRequestRename,
     },
     {
-      key: "docs",
-      title: t("project.detail.quickActions.docs.title"),
-      description: t("project.detail.quickActions.docs.description"),
+      key: "files",
+      title: t("project.detail.quickActions.files.title"),
+      description: t("project.detail.quickActions.files.description"),
       icon: Files,
-      disabled: true,
+      onClick: onOpenFiles,
     },
   ];
 
@@ -73,7 +73,6 @@ export function ProjectQuickActions({
               variant="outline"
               className="h-auto items-start justify-start rounded-2xl border-border/60 px-4 py-4 text-left"
               onClick={action.onClick}
-              disabled={action.disabled}
             >
               <div className="flex w-full items-start justify-between gap-3">
                 <div className="space-y-1">
@@ -87,14 +86,6 @@ export function ProjectQuickActions({
                     {action.description}
                   </p>
                 </div>
-                {action.disabled ? (
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border-border/70 bg-muted/40 text-[10px] text-muted-foreground"
-                  >
-                    {t("project.detail.quickActions.soon")}
-                  </Badge>
-                ) : null}
               </div>
             </Button>
           );

@@ -2,6 +2,7 @@ export { CreateProjectDialog } from "@/features/projects/components/create-proje
 export { MoveTaskToProjectDialog } from "@/features/projects/components/move-task-to-project-dialog";
 export { ProjectDetailPanel } from "@/features/projects/components/project-detail-panel";
 export { ProjectHeader } from "@/features/projects/components/project-header";
+export { ProjectFilesDialog } from "@/features/projects/components/project-files-dialog";
 export { ProjectInfoDrawer } from "@/features/projects/components/project-info-drawer";
 export { ProjectInfoSection } from "@/features/projects/components/project-info-section";
 export { ProjectPageClient } from "@/features/projects/components/project-page-client";

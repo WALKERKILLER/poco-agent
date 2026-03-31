@@ -1545,6 +1545,25 @@
       "infoDrawer": {
         "title": "Projektinfos"
       },
+      "files": {
+        "title": "Projektdateien",
+        "description": "Dateien, die {{name}} hinzugefügt werden, stehen in jedem Lauf dieses Projekts zur Verfügung.",
+        "uploadTitle": "Dateien hochladen",
+        "uploadDescription": "Hänge Dokumente, Notizen oder Ausschnitte an, damit der Projektkontext jederzeit griffbereit ist.",
+        "uploadButton": "Dateien hinzufügen",
+        "loading": "Projektdateien werden geladen...",
+        "emptyTitle": "Noch keine Projektdateien",
+        "emptyDescription": "Füge hier Dateien hinzu, damit jeder Lauf dieses Projekts sie als Kontext nutzen kann.",
+        "count": "{{count}} Dateien",
+        "unknownSize": "Unbekannte Größe",
+        "toasts": {
+          "loadFailed": "Projektdateien konnten nicht geladen werden",
+          "added": "{{name}} zu den Projektdateien hinzugefügt",
+          "addFailed": "Datei konnte dem Projekt nicht hinzugefügt werden",
+          "removed": "{{name}} aus den Projektdateien entfernt",
+          "removeFailed": "Projektdatei konnte nicht entfernt werden"
+        }
+      },
       "notFoundTitle": "Projekt nicht gefunden",
       "notFoundDescription": "Dieses Projekt ist nicht verfügbar oder du hast keinen Zugriff mehr darauf.",
       "backHome": "Zur Startseite",
@@ -1570,6 +1589,10 @@
         "rename": {
           "title": "Projekt bearbeiten",
           "description": "Aktualisiere den Projektnamen, ohne die Detailansicht zu verlassen."
+        },
+        "files": {
+          "title": "Projektdateien",
+          "description": "Lade Dateien hoch, die jeder Lauf in diesem Projekt nutzen kann."
         },
         "docs": {
           "title": "Projektdokumente",
