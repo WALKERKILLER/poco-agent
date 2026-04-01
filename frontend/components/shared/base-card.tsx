@@ -57,7 +57,7 @@ export function BaseCard({
           : undefined
       }
       className={cn(
-        "group relative flex items-center gap-2 rounded-lg border border-border bg-card p-2 text-sm shadow-sm transition-all hover:shadow-md",
+        "group relative flex items-center gap-2 overflow-visible rounded-lg border border-border bg-card p-2 text-sm shadow-sm transition-all hover:shadow-md",
         isClickable ? "cursor-pointer" : "",
         className,
       )}

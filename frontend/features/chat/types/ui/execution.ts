@@ -53,6 +53,7 @@ export interface NewMessage {
  * Contains the IDs of MCP servers, skills, and presets used in this session
  */
 export interface ConfigSnapshot {
+  preset_id?: number | null;
   mcp_server_ids?: number[];
   skill_ids?: number[];
   plugin_ids?: number[];

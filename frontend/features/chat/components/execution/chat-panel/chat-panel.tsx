@@ -69,6 +69,8 @@ import {
   normalizeModelSelection,
   type ModelSelection,
 } from "@/features/chat/lib/model-catalog";
+import { presetsService } from "@/features/capabilities/presets/api/presets-api";
+import type { Preset } from "@/features/capabilities/presets/lib/preset-types";
 import {
   LocalFilesystemDialog,
   type LocalFilesystemDraft,
@@ -197,6 +199,12 @@ export function ChatPanel({
     React.useState<QuoteSelectionState | null>(null);
   const [draftModelSelection, setDraftModelSelection] =
     React.useState<ModelSelection | null>(null);
+  const [persistedPreset, setPersistedPreset] = React.useState<Preset | null>(
+    null,
+  );
+  const [draftPreset, setDraftPreset] = React.useState<Preset | null | undefined>(
+    undefined,
+  );
   const [filesystemDialogOpen, setFilesystemDialogOpen] = React.useState(false);
   const [isSavingFilesystem, setIsSavingFilesystem] = React.useState(false);
 
@@ -272,11 +280,42 @@ export function ChatPanel({
     setStickyUserInput(null);
     setQuoteSelection(null);
     setDraftModelSelection(null);
+    setDraftPreset(undefined);
+    setPersistedPreset(null);
     if (stickyTimerRef.current) {
       window.clearTimeout(stickyTimerRef.current);
       stickyTimerRef.current = null;
     }
   }, [session?.session_id]);
+
+  React.useEffect(() => {
+    const presetId = session?.config_snapshot?.preset_id ?? null;
+    if (!session?.session_id || presetId === null) {
+      setPersistedPreset(null);
+      return;
+    }
+
+    let isCancelled = false;
+    void (async () => {
+      try {
+        const preset = await presetsService.getPreset(presetId, {
+          revalidate: 0,
+        });
+        if (!isCancelled) {
+          setPersistedPreset(preset);
+        }
+      } catch (error) {
+        console.error("[ChatPanel] Failed to load preset:", error);
+        if (!isCancelled) {
+          setPersistedPreset(null);
+        }
+      }
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [session?.config_snapshot?.preset_id, session?.session_id]);
 
   const defaultSelection = React.useMemo(() => {
     const defaultOption = modelOptions.find((option) => option.isDefault);
@@ -314,6 +353,8 @@ export function ChatPanel({
       normalizeModelSelection(draftModelSelection ?? persistedModelSelection),
     [draftModelSelection, persistedModelSelection],
   );
+  const currentPreset =
+    draftPreset === undefined ? persistedPreset : draftPreset;
   const selectedModelId = selectedModelSelection.modelId;
   const selectedModelLabel = React.useMemo(() => {
     if (!selectedModelSelection.modelId) {
@@ -946,13 +987,14 @@ export function ChatPanel({
   // Check for config snapshot or runtime data
   const hasConfigSnapshot =
     session?.config_snapshot &&
+    (session.config_snapshot.preset_id != null ||
     ((session.config_snapshot.mcp_server_ids &&
       session.config_snapshot.mcp_server_ids.length > 0) ||
       session.config_snapshot.browser_enabled === true ||
       (session.config_snapshot.plugin_ids &&
         session.config_snapshot.plugin_ids.length > 0) ||
       (session.config_snapshot.skill_ids &&
-        session.config_snapshot.skill_ids.length > 0));
+        session.config_snapshot.skill_ids.length > 0)));
   const hasSkills =
     statePatch?.skills_used && statePatch.skills_used.length > 0;
   const hasMcp = statePatch?.mcp_status && statePatch.mcp_status.length > 0;
@@ -1295,12 +1337,14 @@ export function ChatPanel({
       ) : null}
 
       {/* Status Bar - Skills and MCP */}
-      {(hasConfigSnapshot || hasSkills || hasMcp || hasBrowser) && (
+      {(currentPreset || hasConfigSnapshot || hasSkills || hasMcp || hasBrowser) && (
         <StatusBar
           configSnapshot={session?.config_snapshot}
           skills={statePatch?.skills_used}
           mcpStatuses={statePatch?.mcp_status}
           browser={statePatch?.browser}
+          preset={currentPreset}
+          onPresetChange={setDraftPreset}
           className={isRightPanelCollapsed ? "px-[20%]" : undefined}
         />
       )}
