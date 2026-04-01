@@ -29,6 +29,10 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/lib/i18n/client";
+import {
+  pickLocalDirectory,
+  supportsNativeDirectoryPicker,
+} from "@/lib/local-directory-picker";
 import { cn } from "@/lib/utils";
 import { localFilesystemApi } from "@/features/task-composer/api/local-filesystem-api";
 import {
@@ -41,20 +45,6 @@ import type {
   LocalFilesystemSupport,
   LocalMountDraftRow,
 } from "@/features/task-composer/types/local-filesystem";
-
-async function resolveDirectoryPath(name: string): Promise<string | null> {
-  try {
-    const res = await fetch(
-      `/api/resolve-directory?name=${encodeURIComponent(name)}`,
-    );
-    if (!res.ok) return null;
-    const data: { paths: string[] } = await res.json();
-    // Only auto-fill when there's exactly one match to avoid ambiguity
-    return data.paths.length === 1 ? data.paths[0] : null;
-  } catch {
-    return null;
-  }
-}
 
 interface LocalFilesystemDialogProps {
   open: boolean;
@@ -156,29 +146,27 @@ export function LocalFilesystemDialog({
   );
 
   const handleAddRow = React.useCallback(async () => {
-    if (!("showDirectoryPicker" in window)) {
+    if (!supportsNativeDirectoryPicker()) {
       toast.error(t("filesystem.picker.notSupported"));
       setRows((prev) => [...prev, createEmptyLocalMountDraftRow()]);
       return;
     }
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const handle = (await (window as any).showDirectoryPicker()) as {
-        name: string;
-      };
-      const displayName = handle.name;
-      const hostPath = await resolveDirectoryPath(displayName);
+      const pickedDirectory = await pickLocalDirectory();
+      if (!pickedDirectory) {
+        return;
+      }
 
       setRows((prev) => [
         ...prev,
         createEmptyLocalMountDraftRow({
-          host_path: hostPath ?? "",
-          name: displayName,
+          host_path: pickedDirectory.hostPath ?? "",
+          name: pickedDirectory.displayName,
         }),
       ]);
 
-      if (!hostPath) {
+      if (!pickedDirectory.hostPath) {
         toast.warning(t("filesystem.picker.resolveFailed"));
       }
     } catch {

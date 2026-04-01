@@ -26,7 +26,9 @@ class Project(Base, TimestampMixin):
     mount_enabled: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default=text("false"), nullable=False
     )
+    mount_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     mount_path: Mapped[str | None] = mapped_column(Text, nullable=True)
+    mount_access_mode: Mapped[str | None] = mapped_column(String(2), nullable=True)
     # Default git repository context for this project (GitHub-only in v1).
     repo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     git_branch: Mapped[str | None] = mapped_column(String(255), nullable=True)

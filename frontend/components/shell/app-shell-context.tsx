@@ -20,7 +20,9 @@ export type ProjectCreateInput = {
   description?: string | null;
   default_model?: string | null;
   mount_enabled?: boolean;
+  mount_name?: string | null;
   mount_path?: string | null;
+  mount_access_mode?: "ro" | "rw" | null;
 } & ProjectRepoDefaultsInput;
 
 export type ProjectUpdatesInput = {
@@ -28,7 +30,9 @@ export type ProjectUpdatesInput = {
   description?: string | null;
   default_model?: string | null;
   mount_enabled?: boolean;
+  mount_name?: string | null;
   mount_path?: string | null;
+  mount_access_mode?: "ro" | "rw" | null;
 } & ProjectRepoDefaultsInput;
 
 export interface AppShellContextValue {

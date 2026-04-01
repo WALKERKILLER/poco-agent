@@ -122,15 +122,17 @@ export function ProjectPageClient({ projectId }: ProjectPageClientProps) {
       local_mounts: [
         {
           id: "project-default",
-          name: currentProject.name || "Project workspace",
+          name: (currentProject?.mountName || "").trim() || currentProject.name,
           host_path: mountPath,
-          access_mode: "rw",
+          access_mode: currentProject?.mountAccessMode ?? "rw",
         },
       ],
     };
   }, [
     currentProject?.mountEnabled,
+    currentProject?.mountName,
     currentProject?.mountPath,
+    currentProject?.mountAccessMode,
     currentProject?.name,
   ]);
 
@@ -282,7 +284,9 @@ export function ProjectPageClient({ projectId }: ProjectPageClientProps) {
                         description: updates.description,
                         default_model: updates.defaultModel,
                         mount_enabled: updates.mountEnabled,
+                        mount_name: updates.mountName,
                         mount_path: updates.mountPath,
+                        mount_access_mode: updates.mountAccessMode,
                       });
                     }}
                     onOpenSettings={() => setSettingsOpen(true)}

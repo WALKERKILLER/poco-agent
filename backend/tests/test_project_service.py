@@ -41,7 +41,9 @@ class ProjectServiceTests(unittest.TestCase):
                 description="  Project description  ",
                 default_model="  claude-sonnet-4-20250514  ",
                 mount_enabled=True,
+                mount_name="  Demo workspace  ",
                 mount_path="  /workspace/demo  ",
+                mount_access_mode="rw",
             ),
         )
 
@@ -50,11 +52,15 @@ class ProjectServiceTests(unittest.TestCase):
         self.assertEqual(created_project.description, "Project description")
         self.assertEqual(created_project.default_model, "claude-sonnet-4-20250514")
         self.assertTrue(created_project.mount_enabled)
+        self.assertEqual(created_project.mount_name, "Demo workspace")
         self.assertEqual(created_project.mount_path, "/workspace/demo")
+        self.assertEqual(created_project.mount_access_mode, "rw")
         self.db.commit.assert_called_once()
         self.assertEqual(result.default_model, "claude-sonnet-4-20250514")
         self.assertTrue(result.mount_enabled)
+        self.assertEqual(result.mount_name, "Demo workspace")
         self.assertEqual(result.mount_path, "/workspace/demo")
+        self.assertEqual(result.mount_access_mode, "rw")
 
     @patch("app.services.project_service.ProjectRepository.get_by_id")
     def test_update_project_updates_runtime_settings_independently(
@@ -68,7 +74,9 @@ class ProjectServiceTests(unittest.TestCase):
             description=None,
             default_model=None,
             mount_enabled=False,
+            mount_name=None,
             mount_path=None,
+            mount_access_mode=None,
             repo_url=None,
             git_branch=None,
             git_token_env_key=None,
@@ -86,17 +94,23 @@ class ProjectServiceTests(unittest.TestCase):
             ProjectUpdateRequest(
                 default_model="  claude-opus-4-1  ",
                 mount_enabled=True,
+                mount_name="  Next workspace  ",
                 mount_path="  /workspace/next  ",
+                mount_access_mode="ro",
             ),
         )
 
         self.assertEqual(project.default_model, "claude-opus-4-1")
         self.assertTrue(project.mount_enabled)
+        self.assertEqual(project.mount_name, "Next workspace")
         self.assertEqual(project.mount_path, "/workspace/next")
+        self.assertEqual(project.mount_access_mode, "ro")
         self.db.commit.assert_called_once()
         self.assertEqual(result.default_model, "claude-opus-4-1")
         self.assertTrue(result.mount_enabled)
+        self.assertEqual(result.mount_name, "Next workspace")
         self.assertEqual(result.mount_path, "/workspace/next")
+        self.assertEqual(result.mount_access_mode, "ro")
 
 
 if __name__ == "__main__":

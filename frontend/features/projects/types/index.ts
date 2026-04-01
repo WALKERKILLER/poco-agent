@@ -4,7 +4,9 @@ export interface ProjectItem {
   icon?: string;
   defaultModel?: string | null;
   mountEnabled?: boolean;
+  mountName?: string | null;
   mountPath?: string | null;
+  mountAccessMode?: "ro" | "rw" | null;
   /** Default git repository context (GitHub-only in v1). */
   repoUrl?: string | null;
   gitBranch?: string | null;

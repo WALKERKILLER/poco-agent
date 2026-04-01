@@ -6,6 +6,7 @@ import { FolderKanban, GitBranch, Link2, PenSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RenameProjectDialog } from "@/features/projects/components/rename-project-dialog";
+import type { LocalMountAccessMode } from "@/features/chat/types/api/session";
 import type { ProjectItem } from "@/features/projects/types";
 import { useT } from "@/lib/i18n/client";
 
@@ -34,14 +35,18 @@ export function ProjectInfoHeader({
       description?: string | null,
       defaultModel?: string | null,
       mountEnabled?: boolean,
+      mountName?: string | null,
       mountPath?: string | null,
+      mountAccessMode?: LocalMountAccessMode | null,
     ) => {
       await onUpdate({
         name,
         description,
         defaultModel,
         mountEnabled,
+        mountName,
         mountPath,
+        mountAccessMode,
       });
     },
     [onUpdate],
@@ -119,15 +124,27 @@ export function ProjectInfoHeader({
         projectDescription={project.description}
         projectDefaultModel={project.defaultModel}
         projectMountEnabled={project.mountEnabled}
+        projectMountName={project.mountName}
         projectMountPath={project.mountPath}
+        projectMountAccessMode={project.mountAccessMode}
         allowDescriptionEdit
-        onRename={(name, description, defaultModel, mountEnabled, mountPath) => {
+        onRename={(
+          name,
+          description,
+          defaultModel,
+          mountEnabled,
+          mountName,
+          mountPath,
+          mountAccessMode,
+        ) => {
           void handleRename(
             name,
             description,
             defaultModel,
             mountEnabled,
+            mountName,
             mountPath,
+            mountAccessMode,
           );
         }}
       />

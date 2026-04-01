@@ -27,6 +27,7 @@ import {
 import { RenameProjectDialog } from "@/features/projects/components/rename-project-dialog";
 import { ProjectFilesDialog } from "@/features/projects/components/project-files-dialog";
 import { projectFilesService } from "@/features/projects/api/project-files-api";
+import type { LocalMountAccessMode } from "@/features/chat/types/api/session";
 import type { ProjectItem } from "@/features/projects/types";
 import { useLanguage } from "@/hooks/use-language";
 import { useT } from "@/lib/i18n/client";
@@ -145,14 +146,18 @@ export function ProjectInfoDrawer({
       newDescription?: string | null,
       defaultModel?: string | null,
       mountEnabled?: boolean,
+      mountName?: string | null,
       mountPath?: string | null,
+      mountAccessMode?: LocalMountAccessMode | null,
     ) => {
       void onUpdateProject({
         name: newName,
         description: newDescription,
         defaultModel,
         mountEnabled,
+        mountName,
         mountPath,
+        mountAccessMode,
       });
     },
     [onUpdateProject],
@@ -272,7 +277,9 @@ export function ProjectInfoDrawer({
         projectDescription={project.description}
         projectDefaultModel={project.defaultModel}
         projectMountEnabled={project.mountEnabled}
+        projectMountName={project.mountName}
         projectMountPath={project.mountPath}
+        projectMountAccessMode={project.mountAccessMode}
         allowDescriptionEdit
         onRename={handleRename}
       />

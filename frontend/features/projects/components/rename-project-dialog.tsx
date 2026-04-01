@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { ChevronDown, HardDrive, Sparkles } from "lucide-react";
+import { ChevronDown, FolderPlus, HardDrive, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 import { useT } from "@/lib/i18n/client";
 import {
   Collapsible,
@@ -19,11 +20,45 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ModelSelector } from "@/features/chat/components/chat/model-selector";
 import { useModelCatalog } from "@/features/chat/hooks/use-model-catalog";
 import type { ModelSelection } from "@/features/chat/lib/model-catalog";
+import type { LocalMountAccessMode } from "@/features/chat/types/api/session";
+import {
+  pickLocalDirectory,
+  supportsNativeDirectoryPicker,
+} from "@/lib/local-directory-picker";
+
+function getDefaultMountName(
+  projectName: string,
+  mountEnabled: boolean,
+  mountName: string | null | undefined,
+  mountPath: string | null | undefined,
+): string {
+  const trimmedMountName = (mountName || "").trim();
+  if (trimmedMountName) {
+    return trimmedMountName;
+  }
+  if (mountEnabled && (mountPath || "").trim()) {
+    return projectName.trim();
+  }
+  return "";
+}
+
+function getDefaultMountAccessMode(
+  mountAccessMode: LocalMountAccessMode | null | undefined,
+): LocalMountAccessMode {
+  return mountAccessMode ?? "rw";
+}
 
 interface RenameProjectDialogProps {
   open: boolean;
@@ -32,13 +67,17 @@ interface RenameProjectDialogProps {
   projectDescription?: string | null;
   projectDefaultModel?: string | null;
   projectMountEnabled?: boolean;
+  projectMountName?: string | null;
   projectMountPath?: string | null;
+  projectMountAccessMode?: LocalMountAccessMode | null;
   onRename: (
     newName: string,
     newDescription?: string | null,
     defaultModel?: string | null,
     mountEnabled?: boolean,
+    mountName?: string | null,
     mountPath?: string | null,
+    mountAccessMode?: LocalMountAccessMode | null,
   ) => void;
   allowDescriptionEdit?: boolean;
 }
@@ -50,7 +89,9 @@ export function RenameProjectDialog({
   projectDescription,
   projectDefaultModel,
   projectMountEnabled = false,
+  projectMountName,
   projectMountPath,
+  projectMountAccessMode,
   onRename,
   allowDescriptionEdit = false,
 }: RenameProjectDialogProps) {
@@ -66,7 +107,19 @@ export function RenameProjectDialog({
   const [modelSelection, setModelSelection] =
     React.useState<ModelSelection | null>(null);
   const [mountEnabled, setMountEnabled] = React.useState(projectMountEnabled);
+  const [mountName, setMountName] = React.useState(() =>
+    getDefaultMountName(
+      projectName,
+      projectMountEnabled,
+      projectMountName,
+      projectMountPath,
+    ),
+  );
   const [mountPath, setMountPath] = React.useState(projectMountPath ?? "");
+  const [mountAccessMode, setMountAccessMode] =
+    React.useState<LocalMountAccessMode>(() =>
+      getDefaultMountAccessMode(projectMountAccessMode),
+    );
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const defaultSelection = React.useMemo(() => {
@@ -84,7 +137,9 @@ export function RenameProjectDialog({
     if (!modelId) {
       return null;
     }
-    const matchingOption = modelOptions.find((option) => option.modelId === modelId);
+    const matchingOption = modelOptions.find(
+      (option) => option.modelId === modelId,
+    );
     return {
       modelId,
       providerId: matchingOption?.providerId ?? null,
@@ -96,13 +151,23 @@ export function RenameProjectDialog({
     setDescription(projectDescription ?? "");
     setModelSelection(projectModelSelection);
     setMountEnabled(projectMountEnabled);
+    setMountName(
+      getDefaultMountName(
+        projectName,
+        projectMountEnabled,
+        projectMountName,
+        projectMountPath,
+      ),
+    );
     setMountPath(projectMountPath ?? "");
+    setMountAccessMode(getDefaultMountAccessMode(projectMountAccessMode));
     setAdvancedOpen(false);
   }, [
-    projectDefaultModel,
     projectDescription,
     projectModelSelection,
+    projectMountAccessMode,
     projectMountEnabled,
+    projectMountName,
     projectMountPath,
     projectName,
   ]);
@@ -116,52 +181,102 @@ export function RenameProjectDialog({
     }
   }, [open]);
 
+  const handlePickMountDirectory = React.useCallback(async () => {
+    if (!supportsNativeDirectoryPicker()) {
+      toast.error(t("filesystem.picker.notSupported"));
+      return;
+    }
+
+    try {
+      const pickedDirectory = await pickLocalDirectory();
+      if (!pickedDirectory) {
+        return;
+      }
+
+      setMountPath(pickedDirectory.hostPath ?? "");
+      setMountName((prev) => prev.trim() || pickedDirectory.displayName);
+
+      if (!pickedDirectory.hostPath) {
+        toast.warning(t("filesystem.picker.resolveFailed"));
+      }
+    } catch {
+      // User cancelled the native picker — do nothing
+    }
+  }, [t]);
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     const trimmed = name.trim();
     const trimmedDescription = description.trim();
+    const trimmedMountName = mountName.trim();
     const trimmedMountPath = mountPath.trim();
     const currentDescription = projectDescription?.trim() ?? "";
     const currentDefaultModel = projectDefaultModel?.trim() ?? "";
+    const currentMountName = getDefaultMountName(
+      projectName,
+      projectMountEnabled,
+      projectMountName,
+      projectMountPath,
+    );
     const currentMountPath = projectMountPath?.trim() ?? "";
+    const currentMountAccessMode = getDefaultMountAccessMode(projectMountAccessMode);
     const nextDescription = trimmedDescription || null;
     const nextDefaultModel = modelSelection?.modelId?.trim() || null;
+    const nextMountName = trimmedMountName || null;
     const nextMountPath = trimmedMountPath || null;
     const hasNameChange = trimmed !== projectName;
     const hasDescriptionChange =
       allowDescriptionEdit && trimmedDescription !== currentDescription;
-    const hasDefaultModelChange = nextDefaultModel !== (currentDefaultModel || null);
+    const hasDefaultModelChange =
+      nextDefaultModel !== (currentDefaultModel || null);
     const hasMountEnabledChange = mountEnabled !== projectMountEnabled;
+    const hasMountNameChange = nextMountName !== (currentMountName || null);
     const hasMountPathChange = nextMountPath !== (currentMountPath || null);
+    const hasMountAccessModeChange = mountAccessMode !== currentMountAccessMode;
+
     if (
       !trimmed ||
       (!hasNameChange &&
         !hasDescriptionChange &&
         !hasDefaultModelChange &&
         !hasMountEnabledChange &&
-        !hasMountPathChange)
+        !hasMountNameChange &&
+        !hasMountPathChange &&
+        !hasMountAccessModeChange)
     ) {
       return;
     }
+
     if (allowDescriptionEdit) {
       onRename(
         trimmed,
         nextDescription,
         nextDefaultModel,
         mountEnabled,
+        nextMountName,
         nextMountPath,
+        mountAccessMode,
       );
     } else {
-      onRename(trimmed, undefined, nextDefaultModel, mountEnabled, nextMountPath);
+      onRename(
+        trimmed,
+        undefined,
+        nextDefaultModel,
+        mountEnabled,
+        nextMountName,
+        nextMountPath,
+        mountAccessMode,
+      );
     }
     onOpenChange(false);
   };
 
+  const isMountNameInvalid = mountEnabled && !mountName.trim();
   const isMountPathInvalid = mountEnabled && !mountPath.trim();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[560px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{t("project.rename")}</DialogTitle>
@@ -270,16 +385,69 @@ export function RenameProjectDialog({
                     </div>
 
                     {mountEnabled ? (
-                      <div className="mt-4 grid gap-2">
-                        <Label htmlFor="project-mount-path">
-                          {t("project.advanced.mountPathLabel")}
-                        </Label>
-                        <Input
-                          id="project-mount-path"
-                          value={mountPath}
-                          onChange={(e) => setMountPath(e.target.value)}
-                          placeholder={t("project.advanced.mountPathPlaceholder")}
-                        />
+                      <div className="mt-4 grid gap-4">
+                        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_10rem]">
+                          <div className="grid gap-2">
+                            <Label htmlFor="project-mount-name">
+                              {t("filesystem.fields.name")}
+                            </Label>
+                            <Input
+                              id="project-mount-name"
+                              value={mountName}
+                              onChange={(e) => setMountName(e.target.value)}
+                              placeholder={t("filesystem.placeholders.name")}
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="project-mount-access">
+                              {t("filesystem.fields.access")}
+                            </Label>
+                            <Select
+                              value={mountAccessMode}
+                              onValueChange={(value) =>
+                                setMountAccessMode(value as LocalMountAccessMode)
+                              }
+                            >
+                              <SelectTrigger id="project-mount-access" className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ro">
+                                  {t("filesystem.accessModes.ro")}
+                                </SelectItem>
+                                <SelectItem value="rw">
+                                  {t("filesystem.accessModes.rw")}
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="project-mount-path">
+                            {t("filesystem.fields.path")}
+                          </Label>
+                          <div className="flex flex-col gap-2 sm:flex-row">
+                            <Input
+                              id="project-mount-path"
+                              value={mountPath}
+                              onChange={(e) => setMountPath(e.target.value)}
+                              placeholder={t("filesystem.placeholders.path")}
+                              className="flex-1"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="shrink-0"
+                              onClick={() => {
+                                void handlePickMountDirectory();
+                              }}
+                            >
+                              <FolderPlus className="size-4" />
+                              {t("filesystem.actions.addMount")}
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     ) : null}
                   </div>
@@ -295,7 +463,10 @@ export function RenameProjectDialog({
             >
               {t("common.cancel")}
             </Button>
-            <Button type="submit" disabled={!name.trim() || isMountPathInvalid}>
+            <Button
+              type="submit"
+              disabled={!name.trim() || isMountNameInvalid || isMountPathInvalid}
+            >
               {t("common.save")}
             </Button>
           </DialogFooter>
