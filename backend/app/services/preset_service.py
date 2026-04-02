@@ -190,8 +190,9 @@ class PresetService:
         PresetService._validate_component_ids(
             requested_ids=skill_ids,
             items=skills,
-            ownership_check=lambda item: item.scope == "system"
-            or item.owner_user_id == user_id,
+            ownership_check=lambda item: (
+                item.scope == "system" or item.owner_user_id == user_id
+            ),
             component_name="skill",
         )
 
@@ -208,8 +209,9 @@ class PresetService:
         PresetService._validate_component_ids(
             requested_ids=mcp_server_ids,
             items=[item for item in servers if item is not None],
-            ownership_check=lambda item: item.scope == "system"
-            or item.owner_user_id == user_id,
+            ownership_check=lambda item: (
+                item.scope == "system" or item.owner_user_id == user_id
+            ),
             component_name="MCP server",
         )
 
@@ -226,8 +228,9 @@ class PresetService:
         PresetService._validate_component_ids(
             requested_ids=plugin_ids,
             items=[item for item in plugins if item is not None],
-            ownership_check=lambda item: item.scope == "system"
-            or item.owner_user_id == user_id,
+            ownership_check=lambda item: (
+                item.scope == "system" or item.owner_user_id == user_id
+            ),
             component_name="plugin",
         )
 
