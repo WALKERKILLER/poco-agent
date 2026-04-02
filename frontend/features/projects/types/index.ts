@@ -5,6 +5,7 @@ export interface ProjectItem {
   name: string;
   icon?: string;
   defaultModel?: string | null;
+  defaultPresetId?: number | null;
   localMounts?: LocalMountConfig[];
   /** Default git repository context (GitHub-only in v1). */
   repoUrl?: string | null;

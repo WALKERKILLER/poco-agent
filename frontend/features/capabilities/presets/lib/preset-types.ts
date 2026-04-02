@@ -84,25 +84,6 @@ export interface PresetUpdateInput {
   subagent_configs?: PresetSubAgentConfig[] | null;
 }
 
-export interface ProjectPreset {
-  project_preset_id: number;
-  project_id: string;
-  preset_id: number;
-  is_default: boolean;
-  sort_order: number;
-  preset: Preset;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ProjectPresetAddInput {
-  preset_id: number;
-}
-
-export interface PresetOrderUpdateInput {
-  sort_order: number;
-}
-
 export interface PresetCapabilityItem {
   id: number;
   name: string;

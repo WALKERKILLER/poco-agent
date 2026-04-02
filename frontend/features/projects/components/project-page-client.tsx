@@ -15,7 +15,6 @@ import {
   submitTask,
   useAutosizeTextarea,
 } from "@/features/task-composer";
-import type { ProjectPreset } from "@/features/capabilities/presets";
 import type { ProjectItem, TaskHistoryItem } from "@/features/projects/types";
 import type { ModelSelection } from "@/features/chat/lib/model-catalog";
 
@@ -23,12 +22,10 @@ import { ProjectDetailPanel } from "@/features/projects/components/project-detai
 import { ProjectHeader } from "@/features/projects/components/project-header";
 import { ProjectInfoDrawer } from "@/features/projects/components/project-info-drawer";
 import { ProjectSettingsDialog } from "@/features/projects/components/project-settings-dialog";
-import { getDefaultProjectPresetId } from "@/features/projects/lib/project-presets";
 import { CapabilityToggleProvider } from "@/features/connectors";
 import { useAppShell } from "@/components/shell/app-shell-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { projectPresetsService } from "@/features/projects/api/project-presets-api";
 
 interface ProjectPageClientProps {
   projectId: string;
@@ -49,9 +46,6 @@ export function ProjectPageClient({ projectId }: ProjectPageClientProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [mode, setMode] = React.useState<ComposerMode>("task");
   const [settingsOpen, setSettingsOpen] = React.useState(false);
-  const [projectPresets, setProjectPresets] = React.useState<ProjectPreset[]>(
-    [],
-  );
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(true);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
@@ -71,31 +65,7 @@ export function ProjectPageClient({ projectId }: ProjectPageClientProps) {
     });
   }, [currentProject?.name, t]);
   const homePath = lng ? `/${lng}/home` : "/home";
-
-  React.useEffect(() => {
-    let active = true;
-
-    const loadProjectPresets = async () => {
-      try {
-        const items = await projectPresetsService.list(projectId, {
-          revalidate: 0,
-        });
-        if (!active) return;
-        setProjectPresets(items);
-      } catch (error) {
-        console.error("[ProjectPage] Failed to load project presets", error);
-      }
-    };
-
-    void loadProjectPresets();
-    return () => {
-      active = false;
-    };
-  }, [projectId]);
-
-  const defaultPresetId = React.useMemo(() => {
-    return getDefaultProjectPresetId(projectPresets);
-  }, [projectPresets]);
+  const defaultPresetId = currentProject?.defaultPresetId ?? null;
 
   const projectModelSelection = React.useMemo<ModelSelection | null>(() => {
     const modelId = (currentProject?.defaultModel || "").trim();
@@ -277,7 +247,7 @@ export function ProjectPageClient({ projectId }: ProjectPageClientProps) {
                   <ProjectInfoDrawer
                     project={currentProject}
                     sessionCount={projectTasks.length}
-                    presetCount={projectPresets.length}
+                    presetCount={currentProject.defaultPresetId ? 1 : 0}
                     onUpdateProject={async (updates) => {
                       await updateProject(projectId, {
                         name: updates.name,
@@ -354,7 +324,12 @@ export function ProjectPageClient({ projectId }: ProjectPageClientProps) {
             onOpenChange={setSettingsOpen}
             projectId={projectId}
             projectName={currentProject.name}
-            onProjectPresetsChange={setProjectPresets}
+            projectDefaultPresetId={currentProject.defaultPresetId ?? null}
+            onProjectDefaultPresetChange={async (presetId) => {
+              await updateProject(projectId, {
+                default_preset_id: presetId,
+              });
+            }}
           />
         ) : null}
       </div>

@@ -10,6 +10,7 @@ interface ProjectApiResponse {
   name: string;
   description?: string | null;
   default_model?: string | null;
+  default_preset_id?: number | null;
   local_mounts?: LocalMountConfig[];
   repo_url?: string | null;
   git_branch?: string | null;
@@ -26,6 +27,7 @@ function mapProject(project: ProjectApiResponse): ProjectItem {
     userId: project.user_id,
     description: project.description ?? null,
     defaultModel: project.default_model ?? null,
+    defaultPresetId: project.default_preset_id ?? null,
     localMounts: project.local_mounts ?? [],
     repoUrl: project.repo_url ?? null,
     gitBranch: project.git_branch ?? null,
@@ -89,6 +91,7 @@ export const projectsService = {
     name: string;
     description?: string | null;
     default_model?: string | null;
+    default_preset_id?: number | null;
     local_mounts?: LocalMountConfig[] | null;
     repo_url?: string;
     git_branch?: string;
@@ -107,6 +110,7 @@ export const projectsService = {
       name?: string;
       description?: string | null;
       default_model?: string | null;
+      default_preset_id?: number | null;
       local_mounts?: LocalMountConfig[] | null;
       repo_url?: string | null;
       git_branch?: string | null;

@@ -185,13 +185,6 @@ export const API_ENDPOINTS = {
   projectFiles: (projectId: string) => `/projects/${projectId}/files`,
   projectFile: (projectId: string, fileId: number) =>
     `/projects/${projectId}/files/${fileId}`,
-  projectPresets: (projectId: string) => `/projects/${projectId}/presets`,
-  projectPreset: (projectId: string, presetId: number) =>
-    `/projects/${projectId}/presets/${presetId}`,
-  projectPresetDefault: (projectId: string, presetId: number) =>
-    `/projects/${projectId}/presets/${presetId}/default`,
-  projectPresetOrder: (projectId: string, presetId: number) =>
-    `/projects/${projectId}/presets/${presetId}/order`,
 
   // Health
   health: "/health",

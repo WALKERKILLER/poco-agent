@@ -20,6 +20,7 @@ export type ProjectCreateInput = {
   name: string;
   description?: string | null;
   default_model?: string | null;
+  default_preset_id?: number | null;
   local_mounts?: LocalMountConfig[] | null;
 } & ProjectRepoDefaultsInput;
 
@@ -27,6 +28,7 @@ export type ProjectUpdatesInput = {
   name?: string;
   description?: string | null;
   default_model?: string | null;
+  default_preset_id?: number | null;
   local_mounts?: LocalMountConfig[] | null;
 } & ProjectRepoDefaultsInput;
 
