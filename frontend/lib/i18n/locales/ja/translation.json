@@ -1527,13 +1527,11 @@
     "settings": "プロジェクト設定",
     "settingsAction": "プリセットを管理",
     "rename": "プロジェクト名を変更",
-    "renameDescription": "新しいプロジェクト名と説明を入力してください",
     "nameLabel": "プロジェクト名",
     "descriptionLabel": "プロジェクトの説明",
     "namePlaceholder": "プロジェクト名を入力",
     "advanced": {
       "title": "詳細設定",
-      "description": "このプロジェクトの新しい実行に既定モデルとローカルマウント一覧を設定します。",
       "defaultModelLabel": "既定モデル",
       "defaultModelPlaceholder": "ワークスペースの既定モデルを使用",
       "mountTitle": "プロジェクトのマウント",
@@ -2251,13 +2249,12 @@
     },
     "mode": {
       "sandboxTitle": "Sandbox のみ",
-      "sandboxDescription": "このタスクでは /workspace の sandbox ファイルのみを使います。",
+      "sandboxDescription": "このタスクでは内蔵の sandbox 環境のみを使います。",
       "localMountTitle": "ローカルディレクトリを許可",
       "localMountDescription": "選択したホストディレクトリの読み取りや編集を agent に許可します。"
     },
     "mounts": {
       "title": "許可済みディレクトリ",
-      "description": "各ディレクトリは実行時に /mnt/local/<id> 配下へマウントされます。",
       "itemTitle": "ディレクトリ {{index}}"
     },
     "actions": {
@@ -2297,7 +2294,8 @@
     },
     "picker": {
       "notSupported": "お使いのブラウザはネイティブフォルダ選択に対応していません。パスを手動で入力してください。",
-      "resolveFailed": "パスを自動検出できませんでした。ホストパスを手動で入力してください。"
+      "resolveFailed": "パスを自動検出できませんでした。ホストパスを手動で入力してください。",
+      "searchLimitation": "安全上の理由から、ホストパスの自動補完は選択したフォルダ名だけで検索します。同名のフォルダが複数ある場合は解決に失敗することがあり、その際は絶対パスを手動で入力する必要があります。"
     }
   }
 }

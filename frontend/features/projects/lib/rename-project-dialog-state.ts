@@ -29,7 +29,7 @@ interface RenameProjectDialogState {
   name: string;
   description: string;
   modelSelection: ModelSelection | null;
-  mountsEnabled: boolean;
+  filesystemMode: "sandbox" | "local_mount";
   mountRows: LocalMountDraftRow[];
 }
 
@@ -50,7 +50,8 @@ export function createRenameProjectDialogState({
           providerId: null,
         }
       : null,
-    mountsEnabled: (projectLocalMounts?.length ?? 0) > 0,
+    filesystemMode:
+      (projectLocalMounts?.length ?? 0) > 0 ? "local_mount" : "sandbox",
     mountRows: toProjectMountDraftRows(projectLocalMounts),
   };
 }

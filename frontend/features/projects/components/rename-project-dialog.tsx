@@ -3,10 +3,6 @@
 import * as React from "react";
 import {
   ChevronDown,
-  FolderPlus,
-  HardDrive,
-  Sparkles,
-  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n/client";
@@ -18,7 +14,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -26,22 +21,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ModelSelector } from "@/features/chat/components/chat/model-selector";
 import { useModelCatalog } from "@/features/chat/hooks/use-model-catalog";
 import type { ModelSelection } from "@/features/chat/lib/model-catalog";
-import type {
-  LocalMountAccessMode,
-  LocalMountConfig,
-} from "@/features/chat/types/api/session";
+import type { LocalMountConfig } from "@/features/chat/types/api/session";
 import {
   createEmptyLocalMountDraftRow,
   validateLocalFilesystemDraft,
@@ -52,6 +36,8 @@ import {
   supportsNativeDirectoryPicker,
 } from "@/lib/local-directory-picker";
 import { createRenameProjectDialogState } from "@/features/projects/lib/rename-project-dialog-state";
+import { LocalMountEditor } from "@/components/shared/local-mount-editor";
+import { LocalFilesystemModeSelector } from "@/components/shared/local-filesystem-mode-selector";
 
 function serializeLocalMounts(mounts: LocalMountConfig[]): string {
   return JSON.stringify(
@@ -110,8 +96,8 @@ export function RenameProjectDialog({
   const [modelSelection, setModelSelection] = React.useState<ModelSelection | null>(
     initialState.modelSelection,
   );
-  const [mountsEnabled, setMountsEnabled] = React.useState(
-    initialState.mountsEnabled,
+  const [filesystemMode, setFilesystemMode] = React.useState(
+    initialState.filesystemMode,
   );
   const [mountRows, setMountRows] = React.useState<LocalMountDraftRow[]>(
     initialState.mountRows,
@@ -136,7 +122,7 @@ export function RenameProjectDialog({
     setName(initialState.name);
     setDescription(initialState.description);
     setModelSelection(initialState.modelSelection);
-    setMountsEnabled(initialState.mountsEnabled);
+    setFilesystemMode(initialState.filesystemMode);
     setMountRows(initialState.mountRows);
     setAdvancedOpen(false);
   }, [initialState, open]);
@@ -173,7 +159,7 @@ export function RenameProjectDialog({
       return;
     }
 
-    setMountsEnabled(true);
+    setFilesystemMode("local_mount");
     try {
       const pickedDirectory = await pickLocalDirectory();
       if (!pickedDirectory) {
@@ -197,21 +183,27 @@ export function RenameProjectDialog({
   }, [t]);
 
   const handleRemoveRow = React.useCallback((clientId: string) => {
-    setMountRows((prev) => prev.filter((row) => row.client_id !== clientId));
+    setMountRows((prev) => {
+      const nextRows = prev.filter((row) => row.client_id !== clientId);
+      return nextRows.length > 0 ? nextRows : [createEmptyLocalMountDraftRow()];
+    });
   }, []);
 
-  const handleMountToggle = React.useCallback((checked: boolean) => {
-    setMountsEnabled(checked);
-    if (!checked) {
-      setMountRows([]);
-    }
-  }, []);
+  const handleFilesystemModeChange = React.useCallback(
+    (nextMode: "sandbox" | "local_mount") => {
+      setFilesystemMode(nextMode);
+      if (nextMode === "local_mount" && mountRows.length === 0) {
+        setMountRows([createEmptyLocalMountDraftRow()]);
+      }
+    },
+    [mountRows.length],
+  );
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
     const validationResult = validateLocalFilesystemDraft(
-      mountsEnabled ? "local_mount" : "sandbox",
+      filesystemMode,
       mountRows,
       null,
     );
@@ -259,17 +251,19 @@ export function RenameProjectDialog({
     onOpenChange(false);
   };
 
+  const nativePickerSupported = supportsNativeDirectoryPicker();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[640px]">
-        <form onSubmit={handleSubmit}>
+      <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-3xl">
+        <form
+          onSubmit={handleSubmit}
+          className="flex max-h-[80vh] flex-col overflow-hidden"
+        >
           <DialogHeader>
             <DialogTitle>{t("project.rename")}</DialogTitle>
-            <DialogDescription>
-              {t("project.renameDescription")}
-            </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid flex-1 gap-4 overflow-y-auto py-4 pr-1">
             <div className="grid gap-2">
               <Label htmlFor="project-name">{t("project.nameLabel")}</Label>
               <Input
@@ -314,9 +308,6 @@ export function RenameProjectDialog({
                     <p className="text-sm font-medium text-foreground">
                       {t("project.advanced.title")}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {t("project.advanced.description")}
-                    </p>
                   </div>
                   <ChevronDown
                     className="size-4 shrink-0 text-muted-foreground transition-transform data-[state=open]:rotate-180"
@@ -327,12 +318,11 @@ export function RenameProjectDialog({
 
               <CollapsibleContent className="border-t border-border/60 px-4 py-4">
                 <div className="grid gap-4">
-                  <div className="grid gap-2">
+                  <div className="grid max-w-full gap-2 sm:max-w-[50%]">
                     <Label htmlFor="project-default-model">
                       {t("project.advanced.defaultModelLabel")}
                     </Label>
-                    <div className="flex min-h-10 items-center rounded-xl border border-border bg-background px-1">
-                      <Sparkles className="ml-2 size-4 shrink-0 text-muted-foreground" />
+                    <div className="overflow-hidden rounded-xl border border-border bg-background">
                       <ModelSelector
                         options={modelOptions}
                         selection={modelSelection}
@@ -343,143 +333,48 @@ export function RenameProjectDialog({
                         }
                         onChange={setModelSelection}
                         disabled={isLoadingModelCatalog}
-                        triggerClassName="h-9 flex-1 justify-between px-2"
+                        triggerClassName="h-10 w-full rounded-none justify-between px-3"
                       />
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-border/60 bg-background px-4 py-3">
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
                       <div className="min-w-0">
                         <Label
-                          htmlFor="project-mount-enabled"
                           className="flex items-center gap-2 text-sm font-medium"
                         >
-                          <HardDrive className="size-4 text-muted-foreground" />
                           {t("project.advanced.mountTitle")}
                         </Label>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {t("project.advanced.mountDescription")}
                         </p>
                       </div>
-                      <Switch
-                        id="project-mount-enabled"
-                        checked={mountsEnabled}
-                        onCheckedChange={handleMountToggle}
-                      />
                     </div>
 
-                    {mountsEnabled ? (
-                      <div className="mt-4 grid gap-3">
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="text-xs text-muted-foreground">
-                            {t("filesystem.mounts.description")}
-                          </p>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              void handleAddRow();
-                            }}
-                          >
-                            <FolderPlus className="size-4" />
-                            {t("filesystem.actions.addMount")}
-                          </Button>
-                        </div>
+                    <div className="mt-4 grid gap-4">
+                      <LocalFilesystemModeSelector
+                        mode={filesystemMode}
+                        onModeChange={handleFilesystemModeChange}
+                      />
 
-                        <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
-                          {mountRows.map((row) => (
-                            <div
-                              key={row.client_id}
-                              className="rounded-xl border border-border/60 bg-muted/20 p-3"
-                            >
-                              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem]">
-                                <div className="grid gap-2">
-                                  <Label htmlFor={`project-mount-name-${row.client_id}`}>
-                                    {t("filesystem.fields.name")}
-                                  </Label>
-                                  <Input
-                                    id={`project-mount-name-${row.client_id}`}
-                                    value={row.name}
-                                    onChange={(event) =>
-                                      handleRowChange(
-                                        row.client_id,
-                                        "name",
-                                        event.target.value,
-                                      )
-                                    }
-                                    placeholder={t("filesystem.placeholders.name")}
-                                  />
-                                </div>
-                                <div className="grid gap-2">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <Label
-                                      htmlFor={`project-mount-access-${row.client_id}`}
-                                    >
-                                      {t("filesystem.fields.access")}
-                                    </Label>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="icon"
-                                      className="size-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                                      onClick={() => handleRemoveRow(row.client_id)}
-                                      aria-label={t("filesystem.actions.removeMount")}
-                                      title={t("filesystem.actions.removeMount")}
-                                    >
-                                      <Trash2 className="size-4" />
-                                    </Button>
-                                  </div>
-                                  <Select
-                                    value={row.access_mode}
-                                    onValueChange={(value) =>
-                                      handleRowChange(
-                                        row.client_id,
-                                        "access_mode",
-                                        value as LocalMountAccessMode,
-                                      )
-                                    }
-                                  >
-                                    <SelectTrigger
-                                      id={`project-mount-access-${row.client_id}`}
-                                    >
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="ro">
-                                        {t("filesystem.accessModes.ro")}
-                                      </SelectItem>
-                                      <SelectItem value="rw">
-                                        {t("filesystem.accessModes.rw")}
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-
-                              <div className="mt-3 grid gap-2">
-                                <Label htmlFor={`project-mount-path-${row.client_id}`}>
-                                  {t("filesystem.fields.path")}
-                                </Label>
-                                <Input
-                                  id={`project-mount-path-${row.client_id}`}
-                                  value={row.host_path}
-                                  onChange={(event) =>
-                                    handleRowChange(
-                                      row.client_id,
-                                      "host_path",
-                                      event.target.value,
-                                    )
-                                  }
-                                  placeholder={t("filesystem.placeholders.path")}
-                                />
-                              </div>
-                            </div>
-                          ))}
+                      {filesystemMode === "local_mount" ? (
+                        <LocalMountEditor
+                          rows={mountRows}
+                          nativePickerSupported={nativePickerSupported}
+                          onAddRow={() => {
+                            void handleAddRow();
+                          }}
+                          onRemoveRow={handleRemoveRow}
+                          onRowChange={handleRowChange}
+                          idPrefix="project-mount"
+                        />
+                      ) : (
+                        <div className="rounded-2xl border border-dashed border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
+                          {t("filesystem.messages.sandboxOnly")}
                         </div>
-                      </div>
-                    ) : null}
+                      )}
+                    </div>
                   </div>
                 </div>
               </CollapsibleContent>

@@ -5,6 +5,12 @@ import path from "path";
 
 const MAX_DEPTH = 5;
 const MAX_RESULTS = 5;
+const SKIP_DIRS = new Set([
+  "Library",
+  "Applications",
+  "Containers",
+  "Group Containers",
+]);
 
 async function searchDirectory(
   basePath: string,
@@ -19,6 +25,7 @@ async function searchDirectory(
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       if (entry.name.startsWith(".")) continue;
+      if (SKIP_DIRS.has(entry.name)) continue;
 
       const fullPath = path.join(basePath, entry.name);
       if (entry.name === targetName) {

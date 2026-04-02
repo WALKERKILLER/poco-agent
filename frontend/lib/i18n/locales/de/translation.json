@@ -1527,13 +1527,11 @@
     "settings": "Projekteinstellungen",
     "settingsAction": "Vorlagen verwalten",
     "rename": "Projekt umbenennen",
-    "renameDescription": "Gib einen neuen Projektnamen und eine Beschreibung ein",
     "nameLabel": "Projektname",
     "descriptionLabel": "Projektbeschreibung",
     "namePlaceholder": "Projektnamen eingeben",
     "advanced": {
       "title": "Erweiterte Konfiguration",
-      "description": "Lege ein Standardmodell und eine Liste lokaler Mounts für neue Ausführungen in diesem Projekt fest.",
       "defaultModelLabel": "Standardmodell",
       "defaultModelPlaceholder": "Standardmodell des Arbeitsbereichs verwenden",
       "mountTitle": "Projekt-Mounts",
@@ -2251,13 +2249,12 @@
     },
     "mode": {
       "sandboxTitle": "Nur Sandbox",
-      "sandboxDescription": "Für diese Aufgabe werden nur Dateien in /workspace verwendet.",
+      "sandboxDescription": "Für diese Aufgabe wird nur die integrierte Sandbox-Umgebung verwendet.",
       "localMountTitle": "Lokale Verzeichnisse freigeben",
       "localMountDescription": "Erlaube dem Agenten, ausgewählte Host-Verzeichnisse zu lesen oder zu bearbeiten."
     },
     "mounts": {
       "title": "Freigegebene Verzeichnisse",
-      "description": "Jedes Verzeichnis wird während der Ausführung unter /mnt/local/<id> eingehängt.",
       "itemTitle": "Verzeichnis {{index}}"
     },
     "actions": {
@@ -2297,7 +2294,8 @@
     },
     "picker": {
       "notSupported": "Der native Ordnerwähler wird in diesem Browser nicht unterstützt. Bitte gib den Pfad manuell ein.",
-      "resolveFailed": "Der Pfad konnte nicht automatisch erkannt werden. Bitte gib den Hostpfad manuell ein."
+      "resolveFailed": "Der Pfad konnte nicht automatisch erkannt werden. Bitte gib den Hostpfad manuell ein.",
+      "searchLimitation": "Aus Sicherheitsgründen sucht das automatische Ausfüllen des Hostpfads nur nach dem ausgewählten Ordnernamen. Wenn mehrere Ordner denselben Namen haben, kann die Auflösung fehlschlagen und du musst den absoluten Pfad manuell eingeben."
     }
   }
 }

@@ -1527,13 +1527,11 @@
     "settings": "项目设置",
     "settingsAction": "管理预设",
     "rename": "重命名项目",
-    "renameDescription": "请输入新的项目名称和描述",
     "nameLabel": "项目名称",
     "descriptionLabel": "项目描述",
     "namePlaceholder": "请输入项目名称",
     "advanced": {
       "title": "高级配置",
-      "description": "为这个项目的新运行设置默认模型和本地挂载列表。",
       "defaultModelLabel": "默认模型",
       "defaultModelPlaceholder": "使用工作区默认模型",
       "mountTitle": "项目挂载",
@@ -2251,13 +2249,12 @@
     },
     "mode": {
       "sandboxTitle": "仅使用 Sandbox",
-      "sandboxDescription": "本次任务只使用 /workspace sandbox 文件。",
+      "sandboxDescription": "本次任务仅使用内置的沙盒环境",
       "localMountTitle": "授权本地目录",
       "localMountDescription": "允许 agent 读取或修改你选定的主机目录。"
     },
     "mounts": {
       "title": "已授权目录",
-      "description": "执行时每个目录都会挂载到 /mnt/local/<id>。",
       "itemTitle": "目录 {{index}}"
     },
     "actions": {
@@ -2297,7 +2294,8 @@
     },
     "picker": {
       "notSupported": "当前浏览器不支持原生文件夹选择，请手动输入路径。",
-      "resolveFailed": "无法自动识别路径，请手动填写主机路径。"
+      "resolveFailed": "无法自动识别路径，请手动填写主机路径。",
+      "searchLimitation": "出于安全原因，主机路径自动补全只会按所选目录名称搜索；如果存在重名目录，自动识别就可能失败，需要你手动填写绝对路径。"
     }
   }
 }

@@ -1527,13 +1527,11 @@
     "settings": "Paramètres du projet",
     "settingsAction": "Gérer les préréglages",
     "rename": "Renommer le projet",
-    "renameDescription": "Entrez un nouveau nom et une description de projet",
     "nameLabel": "Nom du projet",
     "descriptionLabel": "Description du projet",
     "namePlaceholder": "Entrez le nom du projet",
     "advanced": {
       "title": "Configuration avancée",
-      "description": "Définissez un modèle par défaut et une liste de montages locaux pour les nouvelles exécutions de ce projet.",
       "defaultModelLabel": "Modèle par défaut",
       "defaultModelPlaceholder": "Utiliser le modèle par défaut de l'espace de travail",
       "mountTitle": "Montages du projet",
@@ -2251,13 +2249,12 @@
     },
     "mode": {
       "sandboxTitle": "Sandbox uniquement",
-      "sandboxDescription": "Utiliser uniquement les fichiers sandbox de /workspace pour cette tâche.",
+      "sandboxDescription": "N’utiliser que l’environnement sandbox intégré pour cette tâche.",
       "localMountTitle": "Autoriser des dossiers locaux",
       "localMountDescription": "Permettre à l’agent de lire ou modifier les dossiers hôte sélectionnés."
     },
     "mounts": {
       "title": "Dossiers autorisés",
-      "description": "Chaque dossier sera monté sous /mnt/local/<id> pendant l’exécution.",
       "itemTitle": "Dossier {{index}}"
     },
     "actions": {
@@ -2297,7 +2294,8 @@
     },
     "picker": {
       "notSupported": "Le sélecteur de dossiers natif n’est pas pris en charge dans ce navigateur. Veuillez saisir le chemin manuellement.",
-      "resolveFailed": "Impossible de détecter automatiquement le chemin. Veuillez saisir le chemin d’hôte manuellement."
+      "resolveFailed": "Impossible de détecter automatiquement le chemin. Veuillez saisir le chemin d’hôte manuellement.",
+      "searchLimitation": "Par sécurité, le remplissage automatique du chemin hôte recherche uniquement le nom du dossier sélectionné. S'il existe plusieurs dossiers portant ce nom, la résolution peut échouer et vous devrez saisir le chemin absolu manuellement."
     }
   }
 }

@@ -2,12 +2,10 @@
 
 import * as React from "react";
 import {
-  FolderPlus,
   HardDrive,
   Loader2,
   ShieldAlert,
   ShieldCheck,
-  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -19,14 +17,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/lib/i18n/client";
 import {
@@ -45,6 +35,8 @@ import type {
   LocalFilesystemSupport,
   LocalMountDraftRow,
 } from "@/features/task-composer/types/local-filesystem";
+import { LocalMountEditor } from "@/components/shared/local-mount-editor";
+import { LocalFilesystemModeSelector } from "@/components/shared/local-filesystem-mode-selector";
 
 interface LocalFilesystemDialogProps {
   open: boolean;
@@ -226,6 +218,7 @@ export function LocalFilesystemDialog({
     saveBehavior === "next_run"
       ? "filesystem.messages.nextRun"
       : "filesystem.messages.draft";
+  const nativePickerSupported = supportsNativeDirectoryPicker();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -276,154 +269,21 @@ export function LocalFilesystemDialog({
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              className={cn(
-                "rounded-2xl border p-4 text-left transition-colors",
-                filesystemMode === "sandbox"
-                  ? "border-primary bg-primary/5"
-                  : "border-border/60 bg-card hover:border-border",
-              )}
-              onClick={() => setFilesystemMode("sandbox")}
-            >
-              <div className="text-sm font-medium text-foreground">
-                {t("filesystem.mode.sandboxTitle")}
-              </div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                {t("filesystem.mode.sandboxDescription")}
-              </div>
-            </button>
-            <button
-              type="button"
-              disabled={localModeLocked}
-              className={cn(
-                "rounded-2xl border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
-                filesystemMode === "local_mount"
-                  ? "border-primary bg-primary/5"
-                  : "border-border/60 bg-card hover:border-border",
-              )}
-              onClick={() => setFilesystemMode("local_mount")}
-            >
-              <div className="text-sm font-medium text-foreground">
-                {t("filesystem.mode.localMountTitle")}
-              </div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                {t("filesystem.mode.localMountDescription")}
-              </div>
-            </button>
-          </div>
+          <LocalFilesystemModeSelector
+            mode={filesystemMode}
+            onModeChange={setFilesystemMode}
+            localModeLocked={localModeLocked}
+          />
 
           {filesystemMode === "local_mount" ? (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm font-medium text-foreground">
-                    {t("filesystem.mounts.title")}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {t("filesystem.mounts.description")}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-xl"
-                  onClick={handleAddRow}
-                >
-                  <FolderPlus className="size-4" />
-                  {t("filesystem.actions.addMount")}
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                {rows.map((row, index) => (
-                  <div
-                    key={row.client_id}
-                    className="rounded-2xl border border-border/60 bg-card p-4"
-                  >
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <div className="text-sm font-medium text-foreground">
-                        {t("filesystem.mounts.itemTitle", {
-                          index: index + 1,
-                        })}
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 rounded-xl text-muted-foreground"
-                        onClick={() => handleRemoveRow(row.client_id)}
-                        aria-label={t("filesystem.actions.removeMount")}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
-                    <div className="grid gap-3 md:grid-cols-[1fr_1.4fr_180px]">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">
-                          {t("filesystem.fields.name")}
-                        </label>
-                        <Input
-                          value={row.name}
-                          onChange={(event) =>
-                            handleRowChange(
-                              row.client_id,
-                              "name",
-                              event.target.value,
-                            )
-                          }
-                          placeholder={t("filesystem.placeholders.name")}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">
-                          {t("filesystem.fields.path")}
-                        </label>
-                        <Input
-                          value={row.host_path}
-                          onChange={(event) =>
-                            handleRowChange(
-                              row.client_id,
-                              "host_path",
-                              event.target.value,
-                            )
-                          }
-                          placeholder={t("filesystem.placeholders.path")}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">
-                          {t("filesystem.fields.access")}
-                        </label>
-                        <Select
-                          value={row.access_mode}
-                          onValueChange={(nextValue) =>
-                            handleRowChange(
-                              row.client_id,
-                              "access_mode",
-                              nextValue,
-                            )
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ro">
-                              {t("filesystem.accessModes.ro")}
-                            </SelectItem>
-                            <SelectItem value="rw">
-                              {t("filesystem.accessModes.rw")}
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <LocalMountEditor
+              rows={rows}
+              nativePickerSupported={nativePickerSupported}
+              onAddRow={handleAddRow}
+              onRemoveRow={handleRemoveRow}
+              onRowChange={handleRowChange}
+              idPrefix="session-mount"
+            />
           ) : (
             <div className="rounded-2xl border border-dashed border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
               {t("filesystem.messages.sandboxOnly")}

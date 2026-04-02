@@ -1527,13 +1527,11 @@
     "settings": "Project Settings",
     "settingsAction": "Manage Presets",
     "rename": "Rename Project",
-    "renameDescription": "Enter a new project name and description",
     "nameLabel": "Project name",
     "descriptionLabel": "Description",
     "namePlaceholder": "Enter project name",
     "advanced": {
       "title": "Advanced config",
-      "description": "Set a default model and local mount list for new runs in this project.",
       "defaultModelLabel": "Default model",
       "defaultModelPlaceholder": "Use workspace default model",
       "mountTitle": "Project mounts",
@@ -2251,13 +2249,12 @@
     },
     "mode": {
       "sandboxTitle": "Sandbox only",
-      "sandboxDescription": "Use only /workspace sandbox files for this task.",
+      "sandboxDescription": "Use only the built-in sandbox environment for this task.",
       "localMountTitle": "Authorize local directories",
       "localMountDescription": "Allow the agent to read or edit selected host directories."
     },
     "mounts": {
       "title": "Authorized directories",
-      "description": "Each directory will be mounted under /mnt/local/<id> during execution.",
       "itemTitle": "Directory {{index}}"
     },
     "actions": {
@@ -2297,7 +2294,8 @@
     },
     "picker": {
       "notSupported": "Native folder picker is not supported in this browser. Please enter the path manually.",
-      "resolveFailed": "Could not auto-detect the path. Please enter the host path manually."
+      "resolveFailed": "Could not auto-detect the path. Please enter the host path manually.",
+      "searchLimitation": "For safety, host path auto-fill only searches by the selected folder name. If multiple folders share that name, resolution can fail and you need to enter the absolute path manually."
     }
   }
 }

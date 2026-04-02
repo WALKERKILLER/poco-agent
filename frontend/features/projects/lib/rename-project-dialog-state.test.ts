@@ -24,7 +24,7 @@ test("createRenameProjectDialogState derives dialog state from raw project value
     modelId: "claude-sonnet-4-20250514",
     providerId: null,
   });
-  assert.equal(state.mountsEnabled, true);
+  assert.equal(state.filesystemMode, "local_mount");
   assert.equal(state.mountRows.length, 1);
   assert.equal(state.mountRows[0]?.host_path, "/tmp/notes");
 });
