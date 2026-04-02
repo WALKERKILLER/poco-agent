@@ -33,6 +33,13 @@ interface PresetCardProps {
   onDelete: (preset: Preset) => void;
 }
 
+function isActionTarget(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLElement &&
+    Boolean(target.closest("[data-preset-card-action='true']"))
+  );
+}
+
 export function PresetCard({
   preset,
   isBusy = false,
@@ -41,15 +48,68 @@ export function PresetCard({
 }: PresetCardProps) {
   const { t } = useT("translation");
   const accentColor = preset.color || "var(--primary)";
+  const iconBackgroundColor = preset.color
+    ? `${preset.color}12`
+    : "color-mix(in srgb, var(--primary) 7%, transparent)";
   const iconName = preset.icon in PRESET_ICON_MAP ? preset.icon : "default";
+  const countBadgeClassName = "gap-1.5";
+
+  const getCountBadgeProps = (count: number) =>
+    count > 0
+      ? ({
+          variant: "secondary" as const,
+          className: countBadgeClassName,
+        })
+      : ({
+          variant: "outline" as const,
+          className: `${countBadgeClassName} text-muted-foreground/50`,
+        });
+
+  const handleOpenEdit = React.useCallback(() => {
+    onEdit(preset);
+  }, [onEdit, preset]);
+
+  const handleCardClick = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (isActionTarget(event.target)) {
+        return;
+      }
+
+      handleOpenEdit();
+    },
+    [handleOpenEdit],
+  );
+
+  const handleCardKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (isActionTarget(event.target)) {
+        return;
+      }
+
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleOpenEdit();
+      }
+    },
+    [handleOpenEdit],
+  );
 
   return (
-    <Card className="overflow-hidden rounded-2xl border-border/60">
+    <Card
+      role="button"
+      tabIndex={0}
+      onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+      className="cursor-pointer overflow-hidden rounded-2xl border-border/60 transition-all duration-200 hover:border-border hover:shadow-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+    >
       <CardContent className="p-0">
         <div className="flex items-start gap-4 p-5">
           <div
-            className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-muted/40"
-            style={{ color: accentColor }}
+            className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-border/60"
+            style={{
+              color: accentColor,
+              backgroundColor: iconBackgroundColor,
+            }}
           >
             {React.createElement(PRESET_ICON_MAP[iconName], {
               className: "size-5",
@@ -70,12 +130,20 @@ export function PresetCard({
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    data-preset-card-action="true"
+                  >
                     <MoreHorizontal className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onEdit(preset)}>
+                <DropdownMenuContent
+                  align="end"
+                  data-preset-card-action="true"
+                >
+                  <DropdownMenuItem onClick={handleOpenEdit}>
                     <Pencil className="size-4" />
                     <span>{t("common.edit")}</span>
                   </DropdownMenuItem>
@@ -92,19 +160,19 @@ export function PresetCard({
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary" className="gap-1.5">
+              <Badge {...getCountBadgeProps(preset.skill_ids.length)}>
                 <Sparkles className="size-3" />
                 {preset.skill_ids.length}
               </Badge>
-              <Badge variant="secondary" className="gap-1.5">
+              <Badge {...getCountBadgeProps(preset.mcp_server_ids.length)}>
                 <Server className="size-3" />
                 {preset.mcp_server_ids.length}
               </Badge>
-              <Badge variant="secondary" className="gap-1.5">
+              <Badge {...getCountBadgeProps(preset.plugin_ids.length)}>
                 <Brain className="size-3" />
                 {preset.plugin_ids.length}
               </Badge>
-              <Badge variant="secondary" className="gap-1.5">
+              <Badge {...getCountBadgeProps(preset.subagent_configs.length)}>
                 <Bot className="size-3" />
                 {preset.subagent_configs.length}
               </Badge>
