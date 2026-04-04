@@ -193,11 +193,9 @@ export function ProjectSettingsDialog({
                     key={preset.preset_id}
                     preset={preset}
                     selected={cardState.selected}
-                    iconTone={cardState.iconTone}
-                    selectedBackgroundColor={cardState.cardBackgroundColor}
                     disabled={savingKey !== null}
                     onActivate={() => handleSelectPreset(preset.preset_id)}
-                    className="w-full max-w-[20rem]"
+                    className="w-full max-w-[34rem]"
                   />
                 );
               })}

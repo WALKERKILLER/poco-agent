@@ -13,8 +13,10 @@ function createPreset(overrides: Partial<Preset>): Preset {
     user_id: "user-1",
     name: "Code review",
     description: "Review backend services",
-    icon: "code",
-    color: "#3b82f6",
+    visual_key: "preset-visual-01",
+    visual_url: "https://example.com/preset.svg",
+    visual_version: "abc123",
+    visual_name: "Preset Visual 01",
     prompt_template: "",
     skill_ids: [],
     mcp_server_ids: [],
@@ -48,31 +50,18 @@ test("filterProjectPresets matches both name and description", () => {
   );
 });
 
-test("getProjectPresetCardState keeps selected preset on its own accent tint", () => {
-  const preset = createPreset({ preset_id: 3, color: "#f97316" });
+test("getProjectPresetCardState highlights selected presets without color metadata", () => {
+  const preset = createPreset({ preset_id: 3 });
 
   assert.deepEqual(getProjectPresetCardState(preset, 3), {
     selected: true,
-    iconTone: "accent",
-    cardBackgroundColor: "#f9731610",
   });
 });
 
-test("getProjectPresetCardState mutes unselected presets", () => {
-  const preset = createPreset({ preset_id: 4, color: "#22c55e" });
+test("getProjectPresetCardState leaves unselected presets neutral", () => {
+  const preset = createPreset({ preset_id: 4 });
 
   assert.deepEqual(getProjectPresetCardState(preset, 2), {
     selected: false,
-    iconTone: "muted",
-  });
-});
-
-test("getProjectPresetCardState falls back to primary tint when preset color is missing", () => {
-  const preset = createPreset({ preset_id: 5, color: null });
-
-  assert.deepEqual(getProjectPresetCardState(preset, 5), {
-    selected: true,
-    iconTone: "accent",
-    cardBackgroundColor: "color-mix(in srgb, var(--primary) 10%, transparent)",
   });
 });
