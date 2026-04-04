@@ -36,7 +36,6 @@ import { cn } from "@/lib/utils";
 interface ProjectInfoDrawerProps {
   project: ProjectItem;
   sessionCount: number;
-  presetCount: number;
   onUpdateProject: (updates: Partial<ProjectItem>) => Promise<void>;
   onOpenSettings: () => void;
   onDeleteProject?: () => Promise<void> | void;
@@ -60,7 +59,6 @@ function formatUpdatedAt(updatedAt: string | undefined, locale: string) {
 export function ProjectInfoDrawer({
   project,
   sessionCount,
-  presetCount,
   onUpdateProject,
   onOpenSettings,
   onDeleteProject,
@@ -108,11 +106,6 @@ export function ProjectInfoDrawer({
       icon: MessageSquareText,
       label: t("project.detail.stats.sessions"),
       value: sessionCount.toString(),
-    },
-    {
-      icon: Sparkles,
-      label: t("project.detail.stats.presets"),
-      value: presetCount.toString(),
     },
     {
       icon: CalendarClock,

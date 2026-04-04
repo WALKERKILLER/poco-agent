@@ -38,6 +38,10 @@ import type {
   BrowserState,
 } from "@/features/chat/types";
 import { PresetPickerDialog } from "@/features/task-composer/components/preset-picker-dialog";
+import {
+  getPresetIconForegroundColor,
+  getPresetIconSurfaceColor,
+} from "@/features/task-composer/lib/preset-icon-tones";
 import { useT } from "@/lib/i18n/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -55,10 +59,19 @@ interface StatusBarProps {
 }
 
 function PresetGlyph({ preset }: { preset: Preset }) {
-  return React.createElement(getPresetIcon(preset.icon), {
-    className: "size-4 shrink-0",
-    style: preset.color ? { color: preset.color } : undefined,
-  });
+  return (
+    <span
+      className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-border/50"
+      style={{
+        backgroundColor: getPresetIconSurfaceColor(preset.color),
+      }}
+    >
+      {React.createElement(getPresetIcon(preset.icon), {
+        className: "size-4 shrink-0",
+        style: { color: getPresetIconForegroundColor(preset.color) },
+      })}
+    </span>
+  );
 }
 
 export function StatusBar({

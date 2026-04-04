@@ -416,7 +416,7 @@ export function SkillSettingsDialog({
                       placeholder={t(
                         "library.skillSettings.descriptionPlaceholder",
                       )}
-                      className="min-h-28 resize-y"
+                      className="min-h-28  max-h-36 resize-y overflow-y-auto"
                     />
                   </div>
 

@@ -249,7 +249,6 @@ export function ProjectPageClient({ projectId }: ProjectPageClientProps) {
                   <ProjectInfoDrawer
                     project={currentProject}
                     sessionCount={projectTasks.length}
-                    presetCount={currentProject.defaultPresetId ? 1 : 0}
                     onUpdateProject={async (updates) => {
                       await updateProject(projectId, {
                         name: updates.name,

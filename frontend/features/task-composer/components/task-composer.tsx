@@ -27,6 +27,10 @@ import { getPresetIcon } from "@/features/capabilities/presets/lib/preset-visual
 import { useCapabilityRecommendations } from "@/features/task-composer/hooks/use-capability-recommendations";
 import { saveLocalFilesystemDraft } from "@/features/task-composer/lib/local-filesystem-save";
 import { getNextComposerMode } from "@/features/task-composer/lib/mode-utils";
+import {
+  getPresetIconForegroundColor,
+  getPresetIconSurfaceColor,
+} from "@/features/task-composer/lib/preset-icon-tones";
 import { resolveInitialPresetSelection } from "@/features/task-composer/lib/preset-selection";
 import { useSlashCommandAutocomplete } from "@/features/chat/hooks/use-slash-command-autocomplete";
 import { useAppShell } from "@/components/shell/app-shell-context";
@@ -746,15 +750,26 @@ export function TaskComposer({
                         }
                       >
                         {selectedPreset ? (
-                          React.createElement(
-                            getPresetIcon(selectedPreset.icon),
-                            {
-                              className: "size-4 shrink-0",
-                              style: selectedPreset.color
-                                ? { color: selectedPreset.color }
-                                : undefined,
-                            },
-                          )
+                          <span
+                            className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-border/50"
+                            style={{
+                              backgroundColor: getPresetIconSurfaceColor(
+                                selectedPreset.color,
+                              ),
+                            }}
+                          >
+                            {React.createElement(
+                              getPresetIcon(selectedPreset.icon),
+                              {
+                                className: "size-4 shrink-0",
+                                style: {
+                                  color: getPresetIconForegroundColor(
+                                    selectedPreset.color,
+                                  ),
+                                },
+                              },
+                            )}
+                          </span>
                         ) : (
                           <Sparkles className="size-4 shrink-0" />
                         )}

@@ -55,12 +55,12 @@ export function PresetCardSurface({
   const getCountBadgeProps = (count: number) =>
     count > 0
       ? {
-          variant: "secondary" as const,
-          className: "gap-1.5",
+          variant: "outline" as const,
+          className: "gap-1.5 text-muted-foreground/100",
         }
       : {
           variant: "outline" as const,
-          className: "gap-1.5 text-muted-foreground/50",
+          className: "gap-1.5 text-muted-foreground/30",
         };
 
   const handleKeyDown = React.useCallback(
