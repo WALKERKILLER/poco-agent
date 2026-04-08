@@ -2313,5 +2313,20 @@
       "resolveFailed": "Impossible de détecter automatiquement le chemin. Veuillez saisir le chemin d’hôte manuellement.",
       "searchLimitation": "Par sécurité, le remplissage automatique du chemin hôte recherche uniquement le nom du dossier sélectionné. S'il existe plusieurs dossiers portant ce nom, la résolution peut échouer et vous devrez saisir le chemin absolu manuellement."
     }
+  },
+  "auth": {
+    "login": {
+      "title": "Se connecter à Poco",
+      "subtitle": "Utilisez Google ou GitHub pour continuer.",
+      "google": "Continuer avec Google",
+      "github": "Continuer avec GitHub",
+      "hint": "Nous utilisons une session de navigateur sécurisée pour vous garder connecté.",
+      "errors": {
+        "default": "La connexion a échoué. Veuillez réessayer.",
+        "provider_not_configured": "Ce fournisseur de connexion n’est pas encore configuré.",
+        "invalid_oauth_state": "Votre session de connexion a expiré. Veuillez réessayer.",
+        "oauth_failed": "Impossible de terminer la connexion. Veuillez réessayer."
+      }
+    }
   }
 }
