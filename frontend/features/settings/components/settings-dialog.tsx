@@ -295,11 +295,7 @@ export function SettingsDialog({
       return;
     }
 
-    if (
-      view === "account" ||
-      view === "usage" ||
-      view === "shortcuts"
-    ) {
+    if (view === "account" || view === "usage" || view === "shortcuts") {
       setActiveTab(view);
     }
 
@@ -511,9 +507,7 @@ function MobileSettingsOverview({
   const accountItems = sidebarItems.filter(
     (item) => item.id === "account" || item.id === "usage",
   );
-  const generalItems = sidebarItems.filter(
-    (item) => item.id === "shortcuts",
-  );
+  const generalItems = sidebarItems.filter((item) => item.id === "shortcuts");
 
   return (
     <div className="flex-1 space-y-5 overflow-y-auto pb-2">

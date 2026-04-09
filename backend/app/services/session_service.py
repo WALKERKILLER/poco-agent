@@ -86,9 +86,7 @@ class SessionService:
             return
 
         suffix = (
-            f": {reason.strip()}"
-            if isinstance(reason, str) and reason.strip()
-            else ""
+            f": {reason.strip()}" if isinstance(reason, str) and reason.strip() else ""
         )
         for execution in executions:
             execution.is_error = True
@@ -281,10 +279,12 @@ class SessionService:
 
         if request.status is not None:
             next_status = request.status
-            if (
-                db_session.status in {"canceling", "canceled"}
-                and next_status in {"pending", "running", "completed", "failed"}
-            ):
+            if db_session.status in {"canceling", "canceled"} and next_status in {
+                "pending",
+                "running",
+                "completed",
+                "failed",
+            }:
                 next_status = db_session.status
             db_session.status = next_status
         if request.sdk_session_id is not None:

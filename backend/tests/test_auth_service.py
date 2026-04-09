@@ -52,14 +52,19 @@ class AuthServiceTests(unittest.TestCase):
             patch(
                 "app.services.auth_service.UserRepository.get_by_email"
             ) as get_by_email,
+            patch("app.services.auth_service.UserRepository.create") as create_user,
             patch(
-                "app.services.auth_service.UserRepository.create"
-            ) as create_user,
-            patch("app.services.auth_service.AuthIdentityRepository.create")
-            as create_identity,
+                "app.services.auth_service.AuthIdentityRepository.create"
+            ) as create_identity,
         ):
             create_user.side_effect = (
-                lambda _db, *, user_id, primary_email, display_name, avatar_url, status="active": self._build_user(
+                lambda _db,
+                *,
+                user_id,
+                primary_email,
+                display_name,
+                avatar_url,
+                status="active": self._build_user(
                     user_id=user_id,
                     primary_email=primary_email,
                 )
@@ -98,11 +103,13 @@ class AuthServiceTests(unittest.TestCase):
                 "app.services.auth_service.AuthIdentityRepository.get_by_provider_user_id",
                 return_value=identity,
             ),
-            patch("app.services.auth_service.UserRepository.get_by_email")
-            as get_by_email,
+            patch(
+                "app.services.auth_service.UserRepository.get_by_email"
+            ) as get_by_email,
             patch("app.services.auth_service.UserRepository.create") as create_user,
-            patch("app.services.auth_service.AuthIdentityRepository.create")
-            as create_identity,
+            patch(
+                "app.services.auth_service.AuthIdentityRepository.create"
+            ) as create_identity,
         ):
             result = self.service._upsert_user(self.db, profile)
 
@@ -136,13 +143,17 @@ class AuthServiceTests(unittest.TestCase):
                 "app.services.auth_service.UserRepository.get_by_email",
                 return_value=existing_user,
             ) as get_by_email,
-            patch(
-                "app.services.auth_service.UserRepository.create"
-            ) as create_user,
+            patch("app.services.auth_service.UserRepository.create") as create_user,
             patch("app.services.auth_service.AuthIdentityRepository.create"),
         ):
             create_user.side_effect = (
-                lambda _db, *, user_id, primary_email, display_name, avatar_url, status="active": self._build_user(
+                lambda _db,
+                *,
+                user_id,
+                primary_email,
+                display_name,
+                avatar_url,
+                status="active": self._build_user(
                     user_id=user_id,
                     primary_email=primary_email,
                 )
@@ -175,8 +186,9 @@ class AuthServiceTests(unittest.TestCase):
                 return_value=existing_user,
             ) as get_by_email,
             patch("app.services.auth_service.UserRepository.create") as create_user,
-            patch("app.services.auth_service.AuthIdentityRepository.create")
-            as create_identity,
+            patch(
+                "app.services.auth_service.AuthIdentityRepository.create"
+            ) as create_identity,
         ):
             user = self.service._upsert_user(self.db, profile)
 
